@@ -1,0 +1,103 @@
+"""Part III: Analysis workflows (ch8-ch11)."""
+
+LESSONS = [
+dict(
+ id="ch08", part=3, title="Getting started with observability analysis", minutes=11,
+ learn=["Run the core analysis loop on a latency spike","Explain how BubbleUp-style automation works","Place AI agents as copilot, commander or caretaker"],
+ picture=[
+  "Debugging from known conditions relies on scar tissue: seniors who know which dashboard to check. Runbooks rarely keep up, because modern systems seldom fail the same way twice.",
+  "Debugging from first principles uses the core analysis loop. What are you trying to understand? Visualise the anomaly. Find the dimensions common inside the anomaly but not in the baseline. Filter and repeat until it's explained. Anyone curious can do this.",
+  "The brute-force part (diffing every dimension inside vs outside the selection) is what computers are good at. In a real Honeycomb incident, us-east-1a showed up in 98% of slow events vs 17% of baseline: a cloud-provider AZ problem nobody had announced."],
+ diagram="analysis_loop",
+ deeper=[
+  "Keep these in a runbook: owner, on-call, escalation, dependencies, entry-point queries. Don't keep a catalogue of failures and fixes. Wrong docs are worse than none, and instrumentation is the best documentation.",
+  "Better telemetry alone doesn't stop you debugging from known conditions (tail -f | grep, flipping dashboards). The analysis method matters.",
+  "Copilot: you steer (chat with stack traces). Commander: you set goals, the agent uses tools (Claude Code, Cursor). Caretaker: autonomous, e.g. posts three hypotheses when an alert fires. Errors compound as autonomy grows, and humans still own the outcome.",
+  "Agents are optimised for confidence. A field called slow_request (true when >300 ms) was read as the cause. A one-line description fixed it."],
+ names=[["Core analysis loop","Hypothesis-driven, iterative slicing","n/a (method)"],["BubbleUp","Automated baseline vs selection diff","CloudWatch Contributor Insights (top-N only)"],["AIOps (Gartner 2017)","ML for alert noise/anomaly","DevOps Guru"]],
+ interview="I don't start from a guess. I box the anomaly, diff every dimension against the baseline, take the strongest, filter, and repeat. It works on systems I've never seen, and it's automatable.",
+ aws=["Athena/Logs Insights: compare `count(*) by field` inside vs outside a time/latency window","DevOps Guru for anomaly hints (not a replacement)"],
+ practice=dict(q="Walk me through debugging a P99 spike on a service you don't know.",
+  a="Confirm it on a heatmap and box the slow band. Compare its dimensions with the baseline: endpoint, build, region, AZ, customer, flags, instance type. Take the most over-represented value, filter, and repeat until a combination explains it. Then pull an exemplar trace to see where the time goes, and only then open code or a profiler."),
+ checks=[dict(q="Step 3 of the core analysis loop…", o=["Restart pods","Find dimensions common in the anomaly but not the baseline","Write a runbook","Page a senior"], a=1, why="That's the diff step."),
+         dict(q="Which agent persona is most autonomous?", o=["Copilot","Commander","Caretaker","Reviewer"], a=2, why="Caretakers act passively on rules without supervision.")],
+ exercise="Run pocs/03_bubbleup; then change the synthetic data so two causes overlap and watch the loop iterate.",
+ takeaways=["Method beats memory","Automate the diffing; humans interpret","Describe your fields for humans and agents"],
+ terms=[["Debugging from first principles","Treat understanding as provisional until the data proves it"],["Copilot / commander / caretaker","Agent autonomy levels"]],
+ numbers=[["98% vs 17%","us-east-1a share in slow events vs baseline"],["2017","Gartner coins AIOps"]]),
+
+dict(
+ id="ch09", part=3, title="Observability-driven development", minutes=10,
+ learn=["Contrast TDD and ODD","Use observability as the telescope that aims the debugger","Set AI instrumentation guidelines"],
+ picture=[
+  "TDD checks behaviour against a spec in a controlled, mocked world. ODD checks behaviour against reality. Production varies in ways tests strip out.",
+  "Observability works at the scale of systems, not functions. It narrows the search (which component, hop, cohort, build) and then you pick up a debugger or profiler. 'The telescope that aims the microscope.'",
+  "Every PR should answer: how will I know this is working as intended? Page the merger for 30–60 minutes after their deploy so they own the outcome."],
+ diagram=None,
+ deeper=[
+  "Two paths from one latency spike: (a) trace a slow request, timeouts start at service3, reproduce locally with that context; (b) only write endpoints are slow, only some DB primaries, one instance type/AZ, so it's infrastructure, not code.",
+  "In microservices the slowness could be code, a usage change, DB capacity, connection limits, the load balancer, service discovery, or a mix.",
+  "Four questions after a deploy: is it doing what I expected, how does it compare with the last version, are people using it, is anything odd emerging?",
+  "Teams that can't reason about production treat it as a glass castle and roll back by reflex. Accelerate showed speed and quality improve together. North Star metric: lead time to production. Cut batching. Put experienced engineers on the deploy pipeline.",
+  "AI writes OTel easily but invents attributes and duplicates signals. Put explicit rules in agent config: spans are primary, attributes on root spans, layer don't duplicate, required route attributes with their sources. Honeycomb saw AI-coauthored commits 3.4x longer with 5.5x net impact."],
+ names=[["Accelerate (Forsgren, Humble, Kim 2018)","Speed and stability correlate","DORA metrics via CodePipeline/GitHub"],["GDB","Classic debugger","n/a"],["strace for microservices","Early name for observability","n/a"]],
+ interview="Tests tell me my code matches my assumptions. Observability tells me whether production agrees. I ship with the instrumentation that answers 'is it working?', and look while the intent is fresh.",
+ aws=["Deploy notifications to the merger via CodePipeline → EventBridge → Slack with a link to a pre-filtered query"],
+ practice=dict(q="Your team rolls back by reflex at any blip. How do you change that?",
+  a="Reflex rollbacks come from not being able to tell a real regression from noise. Ship smaller changes behind flags, add canary-vs-baseline views per endpoint, and route post-deploy alerts to the author for an hour. Track lead time and change failure rate. Confidence grows as the signal improves."),
+ checks=[dict(q="ODD verifies behaviour against…", o=["A spec","Reality in production","Mocks","Benchmarks"], a=1, why="TDD covers the spec."),
+         dict(q="AI-coauthored commits at Honeycomb were on average…", o=["Shorter","3.4x longer","Same size","10x longer"], a=1, why="607 vs 178 lines.")],
+ exercise="Add 'How will I know this works in prod?' to your PR template and answer it for your last PR.",
+ takeaways=["Instrument while intent is fresh","Telescope then microscope","Agents need explicit instrumentation rules"],
+ terms=[["ODD","Observability-driven development: ship features with the telemetry to verify them"],["Lead time to production","Code written → running in prod"],["Glass castle","Production so opaque teams fear touching it"]],
+ numbers=[["30–60 min","Page the merger after deploy"],["3.4x / 5.5x","AI-coauthored commit size / net impact"]]),
+
+dict(
+ id="ch10", part=3, title="AI agents for observability", minutes=10,
+ learn=["Explain why natural-language querying alone fails","Name proven agent use cases","Design the context layer agents need"],
+ picture=[
+  "Boris Tane argues it all comes down to context. An agent with telemetry access can run a multistep investigation. In the book's example: alert, error-rate query, slow traces, correlated logs, then the codebase, ending with a 2 s retry timeout against a 5 s upstream SLA.",
+  "Without context, agents struggle. They don't know what they don't know. Naming is chaotic (user-service vs users-svc vs legacy-user-api). The data surface is huge. They confuse correlation with causation.",
+  "Proven uses: the first 15 minutes of incident groundwork, explaining traces (that waterfall is an N+1 from an ORM), raising instrumentation quality as code is written, auditing alerts, and proposing data-grounded SLOs."],
+ diagram="context_layers",
+ deeper=[
+  "Six context layers: service topology, naming conventions and aliases, deployment context, known issues, recent incidents (last 30 days), business context (revenue-critical endpoints, thresholds).",
+  "The mental model is disappearing. Coding agents ship code humans never study, so institutional knowledge forms more slowly. Make it explicit and keep it current.",
+  "Augment the on-call engineer; don't automate resolution end to end yet."],
+ names=[["N+1 query","Sequential per-row DB calls from ORM misuse","RDS Performance Insights"],["Context engineering","Curating what an agent sees","Bedrock knowledge bases"]],
+ interview="An observability agent is only as good as its context. Before building one I'd publish a machine-readable map of topology, names, owners, recent changes, incidents and business criticality. Then let it do the first 15 minutes of triage while a human decides.",
+ aws=["Bedrock agent + tools over CloudWatch/X-Ray APIs + a service catalog as context","Amazon Q Developer operational investigations"],
+ practice=dict(q="Leadership wants an AI SRE to auto-resolve incidents. What's your plan?",
+  a="Start with copilot-style triage: gather recent deploys, error and latency deltas, top correlated dimensions and exemplar traces, and post a summary with hypotheses. Build the context layer first. Measure whether it shortens time to understanding, then widen autonomy only on reversible actions with guardrails."),
+ checks=[dict(q="Biggest differentiator of agent effectiveness per ch10?", o=["Model size","Operational context","GPU type","Prompt length"], a=1, why="Rich context → targeted queries → accurate diagnosis."),
+         dict(q="Proven use of agents today?", o=["Fully autonomous remediation","Incident groundwork summary","Replacing on-call","Rewriting services"], a=1, why="Augment, don't replace.")],
+ exercise="Write a YAML 'context card' for one service: aliases, owner, dependencies, known issues, revenue criticality.",
+ takeaways=["Context beats model","Augment humans in incidents","Explicit knowledge replaces vanishing tacit knowledge"],
+ terms=[["Context layer","Machine-readable topology, names, deploys, incidents, business context"]],
+ numbers=[["15 min","Mechanical incident groundwork agents can take"],["2 s vs 5 s","Retry timeout vs upstream SLA in the example"]]),
+
+dict(
+ id="ch11", part=3, title="SLOs for reliability", minutes=14,
+ learn=["Explain why threshold alerts cause fatigue","Define helpful alerts and event-based SLIs","Roll out SLOs in an organisation; use LLMs to draft them"],
+ picture=[
+  "Alerts on CPU over 80% are potential-cause signals: maybe a backup, GC, or a circuit breaker. Teams learn to ignore them, which is normalization of deviance (a term from the Challenger investigation). Every postmortem then adds more.",
+  "Thresholds only cover known-unknowns. Distributed systems are mostly unknown-unknowns: cascading retries, partial brownouts, cache eviction churn. A helpful alert reliably means user experience is degraded, and it can be acted on systematically.",
+  "SLOs alert on symptoms of user pain (the what). Observability explains the why. Prefer event-based SLIs (each request good or bad) over time-based ones (each minute good or bad)."],
+ diagram=None,
+ deeper=[
+  "Event SLI example: eligible = POST /checkout, not kube-probe, root span; good = status < 400 and duration ≤ 4 s; ineligible events return null.",
+  "Mat Vine (ANZ Bank) got launch-ready in 12 weeks against his 12–18 month estimate. Early standardised OTel with domain conventions removed weeks of regex work. They picked fewer than five user journeys. He's sceptical of piloting on a high-performing team (they rarely need SLOs) and targets stressed, critical teams. Full SDLC integration with hundreds of journeys still took 18 months.",
+  "LLMs solve the blank page. Ask for a target with business context and the rationale, then push back. For $1M/month checkout: 99.99% ≈ 4.3 min/month ≈ $100 at risk, vs 99.9% ≈ 43 min ≈ $1,000. Don't out-SLO your dependencies.",
+  "Check generated SLIs: models missed the root-span filter. Keep prompts in version control. Imperfect SLOs for many teams beat perfect ones for a few."],
+ names=[["Normalization of deviance","Accepting ignored alarms as normal (Challenger)","n/a"],["Google SRE book (2016)","SLO/SLI/error budget origin","CloudWatch Application Signals SLOs"],["Implementing SLOs (Hidalgo 2020)","Deep SLO reference","n/a"],["Ollama / gpt-oss-20b","Local open-weights model runner","Bedrock for hosted models"]],
+ interview="I page on SLO burn, not CPU. An SLI classifies each eligible request as good or bad. The alert says users are hurting, and observability lets anyone find why. Unactionable alerts get deleted.",
+ aws=["CloudWatch Application Signals SLOs (request-based) + burn-rate alarms","Exclude ELB/k8s health checks via user agent"],
+ practice=dict(q="Pick an availability target for checkout doing $1M/month on one cloud region.",
+  a="About $23 a minute at risk. 99.9% allows about 43 minutes a month (~$1k); 99.99% about 4.3 minutes (~$100). 99.99% is achievable in one region with redundancy and roughly matches the managed services we depend on. 99.999% needs multi-region active-active, which costs more than it saves. I'd start at 99.9% measured on events, then tighten with data."),
+ checks=[dict(q="A helpful alert must be…", o=["Low threshold","A reliable sign of degraded UX and actionable","On every host metric","Grouped by AIOps"], a=1, why="The book's two criteria."),
+         dict(q="Kubernetes probe requests in an SLI should be…", o=["Good","Bad","Ineligible (null)","Doubled"], a=2, why="They're synthetic, not users.")],
+ exercise="Write an event SLI for your most important endpoint with an explicit eligibility clause; run it in pocs/04_slo_burn.checkout_sli style.",
+ takeaways=["Alert on symptoms; debug causes with observability","Event-based SLIs","Roll out where pain is, not where teams already excel"],
+ terms=[["SLI","Classifier of each eligible event as good/bad"],["SLO","Target proportion of good events over a window"],["SLA","External contract; looser than the SLO"],["Normalization of deviance","Ignoring alarms becomes normal"]],
+ numbers=[["12 weeks vs 12–18 months","ANZ launch vs estimate"],["<5","User journeys used at ANZ launch"],["$23/min","Downtime cost at $1M/month"],["99.99% ≈ 4.3 min/month","Four nines budget"]]),
+]

@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Observability Engineering course</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+/* VOICE: a practical study box for an engineer preparing for interviews; clinical, confident, no fluff.
+   IDEA: a pharmacy label / medicine box: each Part is a labelled compartment, each chapter a dose.
+   PICTURE: the course map as the box itself, six coloured compartments of chapter tiles with progress ticks.
+   COLOUR and TYPE: white, emerald #00a86b, pale pink #ffd6e0, black; night #04140d; Schibsted Grotesk.
+   LAYOUT: rectangles cut like packaging; lessons read as one calm column with labelled panels. */
+:root{color-scheme:light dark;
+--bg:light-dark(#ffffff,#04140d);--ink:light-dark(#0b0f0d,#e9f5ef);--mute:light-dark(#4b5a53,#9cb8aa);
+--acc:light-dark(#00a86b,#2fd394);--accsoft:light-dark(#c9f0dd,#0d3a28);--pink:light-dark(#ffd6e0,#4a2230);
+--card:light-dark(#ffffff,#0a2419);--line:light-dark(#0b0f0d,#5f7d6f);--chip:light-dark(#f1f5f3,#0f2c20)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16.5px/1.55 "Schibsted Grotesk",system-ui,sans-serif;overflow-x:clip}
+a{color:inherit}a:focus-visible,button:focus-visible,summary:focus-visible,input:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.band{padding:clamp(20px,3.5vw,48px) max(5vw,16px)}.wrap{max-width:1240px;margin:0 auto}
+header.top{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;border-bottom:2px solid var(--line);padding:10px max(5vw,16px);position:sticky;top:0;background:var(--bg);z-index:5}
+header.top .brand{font-weight:800;text-decoration:none;margin-right:auto}
+nav.views{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}nav.views a{flex:none;text-decoration:none;padding:8px 12px;border:1.5px solid var(--line);border-radius:999px;font-size:14px}
+nav.views a[aria-current=page]{background:var(--ink);color:var(--bg)}
+h1,h2,h3{line-height:1.08;text-wrap:balance;margin:0 0 .4em}h1{font-size:clamp(32px,5vw,52px);font-weight:800}h2{font-size:clamp(22px,2.6vw,28px);font-weight:800}h3{font-size:18px;font-weight:700}
+p{margin:0 0 .8em;max-width:70ch}.mute{color:var(--mute)}.small{font-size:14px}
+.hero{display:grid;grid-template-columns:minmax(0,1fr);gap:20px}.intro{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:24px;align-items:end}.intro .stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}@media(max-width:820px){.intro{grid-template-columns:minmax(0,1fr)}}
+.box{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border:3px solid var(--line);border-radius:14px;overflow:hidden}
+.comp{padding:14px;border:1.5px solid var(--line);margin:-.75px}
+.comp:nth-child(1),.comp:nth-child(5){background:var(--accsoft)}.comp:nth-child(3),.comp:nth-child(4){background:var(--pink)}
+.comp h3{display:flex;gap:8px;align-items:baseline}.comp h3 b{font-size:28px;font-weight:800;color:var(--acc)}
+.comp:nth-child(3) h3 b,.comp:nth-child(4) h3 b{color:var(--ink)}
+.tiles{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.tile{display:inline-flex;gap:6px;align-items:center;text-decoration:none;background:var(--card);border:1.5px solid var(--line);border-radius:8px;padding:7px 9px;font-size:14px;min-height:40px}
+.tile.done{background:var(--ink);color:var(--bg)}.tile.unread{opacity:.55;border-style:dashed}
+.stats{display:flex;flex-wrap:wrap;gap:10px}.stat{border:2px solid var(--line);border-radius:10px;padding:10px 14px}.stat b{display:block;font-size:28px;font-weight:800}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.panel{border:2px solid var(--line);border-radius:12px;padding:16px 18px;background:var(--card)}
+.panel.acc{background:var(--accsoft)}.panel.pink{background:var(--pink)}
+.lesson{max-width:900px;margin:0 auto}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}.chip{font-size:13px;padding:4px 10px;border-radius:999px;background:var(--chip);border:1px solid var(--line)}
+ul.clean{margin:0;padding-left:1.1em}ul.clean li{margin:.25em 0}
+.fig{margin:14px 0;border:2px solid var(--line);border-radius:12px;padding:10px;background:var(--card);overflow-x:auto}.fig svg{width:100%;min-width:620px;height:auto;display:block}
+.fig figcaption{font-size:13px;color:var(--mute);margin-top:6px}
+.d-box{fill:var(--card);stroke:var(--line);stroke-width:1.5}.d-acc{fill:var(--accsoft);stroke:var(--line);stroke-width:1.5}.d-pink{fill:var(--pink);stroke:var(--line);stroke-width:1.5}
+.d-t{fill:var(--ink);font:500 13px "Schibsted Grotesk",sans-serif}.d-s{fill:var(--mute);font:12px "Schibsted Grotesk",sans-serif}.d-h{fill:var(--ink);font:800 15px "Schibsted Grotesk",sans-serif}
+.d-line{stroke:var(--mute);stroke-width:1.2}.d-arrow{stroke:var(--ink);stroke-width:1.6}.d-head{fill:var(--ink)}
+.d-curve{fill:none;stroke:var(--acc);stroke-width:3}.d-dash{stroke:var(--acc);stroke-width:2.5;stroke-dasharray:6 5}
+.d-pinkf{fill:var(--pink);opacity:.6}.d-accf{fill:var(--accsoft);opacity:.6}
+table{border-collapse:collapse;width:100%;font-size:15px}th,td{border-bottom:1px solid var(--line);padding:8px 6px;text-align:left;vertical-align:top}th{font-weight:700}
+td.num{text-align:right;white-space:nowrap}
+details{border:2px solid var(--line);border-radius:10px;padding:10px 14px;margin:10px 0;background:var(--card)}summary{cursor:pointer;font-weight:700;min-height:28px}
+button,.btn{font:inherit;font-size:15px;min-height:44px;padding:8px 16px;border-radius:10px;border:2px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center}
+button.primary{background:var(--ink);color:var(--bg)}
+.opts{display:grid;gap:8px;margin:8px 0}.opts button{justify-content:flex-start;text-align:left}
+.opts button.right{background:var(--accsoft);border-color:var(--acc)}.opts button.wrong{background:var(--pink)}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.card{min-height:220px;display:grid;place-items:center;text-align:center;font-size:clamp(20px,3vw,28px);font-weight:700;padding:24px;cursor:pointer}
+.card.back{font-weight:500;font-size:18px;background:var(--accsoft)}
+.pager{display:flex;justify-content:space-between;gap:10px;margin-top:24px}
+.check{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line)}.check input{width:22px;height:22px;flex:none;margin-top:3px}
+.bar{height:10px;border-radius:6px;background:var(--chip);border:1px solid var(--line);overflow:hidden}.bar i{display:block;height:100%;background:var(--acc)}
+.scroll{overflow-x:auto}code{overflow-wrap:anywhere}
+.note{font-size:13px;color:var(--mute);margin-top:6px}
+@media(max-width:820px){.box{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.box{grid-template-columns:minmax(0,1fr)}table{font-size:13px}.stack thead{display:none}.stack tr{display:grid;padding-block:10px}.stack td{display:flow-root;border:0;padding:3px 0;padding-inline-start:8em;text-align:start}.stack td::before{content:attr(data-l);float:inline-start;width:7.5em;margin-inline-start:-8em;white-space:normal;font-weight:700}.stack td:empty{display:none}}
+@media(prefers-reduced-motion:no-preference){.card{transition:background .2s}}
+</style>
+<script>new MutationObserver(()=>{for(const c of document.querySelectorAll('.stack td:not([data-l])')){let i=0,p=c;while(p=p.previousElementSibling)i+=p.colSpan;c.dataset.l=c.closest('table').rows[0].cells[i]?.textContent||''}}).observe(document,{childList:true,subtree:true})</script>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="#home">Observability Engineering · study kit</a>
+  <nav class="views" id="nav" aria-label="Sections">
+    <a href="#home">Course</a><a href="#drills">Interview drills</a><a href="#quiz">Quiz</a><a href="#flashcards">Flashcards</a>
+    <a href="#map">Knowledge map</a><a href="#checklist">Checklist</a><a href="#numbers">Numbers</a>
+  </nav>
+</header>
+<main id="app"><div class="band wrap"><p>Loading the course…</p></div></main>
+<script src="diagrams.js"></script>
+<script>
+{
+const app = document.getElementById('app');
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const store = {
+  get(k, d){ try { const v = localStorage.getItem('oe2.' + k); return v ? JSON.parse(v) : d; } catch(e){ return d; } },
+  set(k, v){ try { localStorage.setItem('oe2.' + k, JSON.stringify(v)); } catch(e){} }
+};
+let C = null;
+const DG = window.DIAGRAMS || {};
+const byId = id => C.lessons.find(l => l.id === id);
+const chLink = id => { const l = byId(id); const n = parseInt(id.slice(2), 10);
+  return l ? `<a href="#${esc(id)}">Ch ${n}</a>` : `<span class="mute">Ch ${n}</span>`; };
+const done = () => new Set(store.get('done', []));
+
+function nav(view){
+  for (const a of document.querySelectorAll('#nav a')){
+    if (a.getAttribute('href') === '#' + view) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
+  }
+}
+
+function home(){
+  const d = done();
+  const all = [...C.lessons, ...C.unread].sort((a,b) => a.id.localeCompare(b.id));
+  const parts = Object.entries(C.parts).map(([n, name]) => {
+    const tiles = all.filter(l => String(l.part) === n).map(l =>
+      `<a class="tile${d.has(l.id) ? ' done' : ''}${l.unread ? ' unread' : ''}" href="#${esc(l.id)}" title="${esc(l.title)}">${parseInt(l.id.slice(2),10)}<span>${esc(l.title)}</span></a>`).join('');
+    return `<section class="comp"><h3><b>${esc(n)}</b>${esc(name)}</h3><div class="tiles">${tiles}</div></section>`;
+  }).join('');
+  const pct = Math.round(100 * d.size / C.lessons.length);
+  const mins = C.lessons.reduce((s,l) => s + l.minutes, 0);
+  return `<section class="band wrap hero">
+    <div class="intro"><div><h1>Observability Engineering, interview-ready</h1>
+    <p>One lesson per chapter of the second edition, built for interviews: the idea in plain words, an answer you can say out loud, an AWS mapping, a practice question with a model answer, and checks. Ten runnable POCs back it up.</p></div>
+    <div class="stats"><div class="stat"><b>${C.lessons.length}/32</b>chapters as lessons</div><div class="stat"><b>${mins} min</b>total reading</div><div class="stat"><b>${C.drills.length + C.lessons.length}</b>interview questions</div><div class="stat"><b>${pct}%</b>marked done</div></div></div>
+    <div class="box" aria-label="Course map">${parts}</div>
+    <p class="note">Dashed tiles (chapters 30–32) are not read yet: the browser session ended before them. Progress is kept in this browser only.</p>
+  </section>`;
+}
+
+function lesson(l){
+  const i = C.lessons.indexOf(l), prev = C.lessons[i-1], next = C.lessons[i+1];
+  const d = done();
+  const dg = l.diagram && DG[l.diagram] ? `<figure class="fig">${DG[l.diagram].svg}<figcaption>${esc(DG[l.diagram].caption)}</figcaption></figure>` : '';
+  const checks = l.checks.map((c, qi) => `<div class="panel" data-q="${qi}"><b>${esc(c.q)}</b><div class="opts">${
+    c.o.map((o, oi) => `<button data-o="${oi}">${esc(o)}</button>`).join('')}</div><p class="small mute" hidden>${esc(c.why)}</p></div>`).join('');
+  return `<article class="band lesson">
+    <div class="meta"><span class="chip">Part ${l.part}: ${esc(C.parts[l.part])}</span><span class="chip">Chapter ${parseInt(l.id.slice(2),10)}</span><span class="chip">${l.minutes} min</span></div>
+    <h1>${esc(l.title)}</h1>
+    <div class="panel acc"><h3>You will learn</h3><ul class="clean">${l.learn.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>
+    <h2 style="margin-top:24px">The big picture</h2>${l.picture.map(p => `<p>${esc(p)}</p>`).join('')}
+    ${dg}
+    <div class="panel pink"><h3>Say it in an interview</h3><p>${esc(l.interview)}</p><button data-copy="${esc(l.interview)}">Copy</button></div>
+    <h2 style="margin-top:24px">Going deeper</h2><ul class="clean">${l.deeper.map(x => `<li>${esc(x)}</li>`).join('')}</ul>
+    <h2 style="margin-top:24px">Names to recognise</h2>
+    <table class="stack"><thead><tr><th>Name</th><th>What it is</th><th>Nearest AWS</th></tr></thead><tbody>${
+      l.names.map(r => `<tr>${r.map(c => `<td>${esc(c)}</td>`).join('')}</tr>`).join('')}</tbody></table>
+    <div class="grid2" style="margin-top:18px"><div class="panel"><h3>On AWS</h3><ul class="clean">${l.aws.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>
+    <div class="panel"><h3>Numbers to know</h3><table><tbody>${l.numbers.map(r => `<tr><td class="num">${esc(r[0])}</td><td>${esc(r[1])}</td></tr>`).join('')}</tbody></table></div></div>
+    <h2 style="margin-top:24px">Practice question</h2><p><b>${esc(l.practice.q)}</b></p>
+    <details><summary>Model answer</summary><p>${esc(l.practice.a)}</p></details>
+    <h2 style="margin-top:24px">Quick checks</h2><div class="grid2">${checks}</div>
+    <div class="grid2" style="margin-top:18px"><div class="panel acc"><h3>Exercise</h3><p>${esc(l.exercise)}</p></div>
+    <div class="panel"><h3>Takeaways</h3><ul class="clean">${l.takeaways.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div></div>
+    ${l.related.length ? `<h2 style="margin-top:24px">Connects to</h2><ul class="clean">${l.related.map(r => `<li>${esc(r.concept)}: ${r.chapters.map(chLink).join(', ')}</li>`).join('')}</ul>` : ''}
+    <p class="note">${esc(l.coverage)}</p>
+    <div class="row" style="margin-top:14px"><button class="primary" data-done="${esc(l.id)}">${d.has(l.id) ? 'Marked done ✓' : 'Mark as done'}</button></div>
+    <div class="pager">${prev ? `<a class="btn" href="#${esc(prev.id)}">← ${esc(prev.title)}</a>` : '<span></span>'}${next ? `<a class="btn" href="#${esc(next.id)}">${esc(next.title)} →</a>` : '<a class="btn" href="#drills">Interview drills →</a>'}</div>
+  </article>`;
+}
+
+function unreadView(u){
+  return `<article class="band lesson"><h1>${esc(u.title)}</h1><div class="panel pink"><p>Chapter ${parseInt(u.id.slice(2),10)} isn't read yet. The browser session ended before it, so there's no lesson. Nothing here is guessed.</p></div><p><a class="btn" href="#home">Back to the course</a></p></article>`;
+}
+
+function drills(){
+  const rated = store.get('drills', {});
+  const items = [...C.drills.map((d, i) => ({k: 'd' + i, q: d.q, a: d.a, src: d.source})),
+                 ...C.lessons.map(l => ({k: l.id, q: l.practice.q, a: l.practice.a, src: l.id}))];
+  const shaky = items.filter(x => rated[x.k] === 'shaky').length, nailed = items.filter(x => rated[x.k] === 'nailed').length;
+  return `<section class="band wrap"><h1>Interview drills</h1>
+    <p>Answer out loud first, then open the outline. Rate yourself honestly; shaky ones float to the top next time.</p>
+    <div class="stats"><div class="stat"><b>${items.length}</b>questions</div><div class="stat"><b>${nailed}</b>nailed</div><div class="stat"><b>${shaky}</b>shaky</div></div>
+    ${items.sort((a,b) => (rated[b.k] === 'shaky') - (rated[a.k] === 'shaky')).map(x => `<details><summary>${esc(x.q)}${rated[x.k] ? ` <span class="chip">${esc(rated[x.k])}</span>` : ''}</summary>
+      <p>${esc(x.a)}</p><p class="small mute">Source: ${esc(x.src)}</p>
+      <div class="row"><button data-rate="${esc(x.k)}" data-v="nailed">Nailed it</button><button data-rate="${esc(x.k)}" data-v="shaky">Shaky</button></div></details>`).join('')}
+  </section>`;
+}
+
+let quizState = null;
+function quiz(){
+  if (!quizState){
+    const qs = C.lessons.flatMap(l => l.checks.map(c => ({...c, ch: l.id})));
+    quizState = {qs, i: 0, score: 0, answered: false};
+  }
+  const s = quizState, best = store.get('quizBest', 0);
+  if (s.i >= s.qs.length) return `<section class="band lesson"><h1>Quiz done</h1><p>You scored ${s.score} of ${s.qs.length}. Best so far: ${Math.max(best, s.score)}.</p><button class="primary" data-quiz="restart">Start again</button></section>`;
+  const c = s.qs[s.i];
+  return `<section class="band lesson"><h1>Quiz</h1><div class="row small mute"><span>Question ${s.i + 1} of ${s.qs.length}</span><span>· score ${s.score}</span><span>· from ${chLink(c.ch)}</span></div>
+    <div class="bar" style="margin:10px 0"><i style="width:${100 * s.i / s.qs.length}%"></i></div>
+    <div class="panel" id="quizq"><h2>${esc(c.q)}</h2><div class="opts">${c.o.map((o, oi) => `<button data-qo="${oi}">${esc(o)}</button>`).join('')}</div>
+    <p class="mute" id="why" hidden>${esc(c.why)}</p></div>
+    <div class="row" style="margin-top:12px"><button class="primary" data-quiz="next" ${s.answered ? '' : 'disabled'}>Next</button></div></section>`;
+}
+
+let fc = {i: 0, flipped: false, part: 'all'};
+function cards(){ return C.lessons.filter(l => fc.part === 'all' || String(l.part) === fc.part).flatMap(l => l.terms.map(t => ({t: t[0], d: t[1], ch: l.id}))); }
+function flashcards(){
+  const cs = cards(); if (fc.i >= cs.length) fc.i = 0;
+  const c = cs[fc.i];
+  return `<section class="band lesson"><h1>Flashcards</h1>
+    <div class="row"><label for="fcpart">Part</label><select id="fcpart" style="font:inherit;font-size:16px;min-height:44px;border-radius:10px;padding:6px">
+      <option value="all">All parts</option>${Object.entries(C.parts).map(([n, p]) => `<option value="${esc(n)}"${fc.part === n ? ' selected' : ''}>${esc(n)}: ${esc(p)}</option>`).join('')}</select>
+      <span class="mute small">${fc.i + 1} / ${cs.length} · press Space to flip, ← → to move</span></div>
+    <div class="panel card${fc.flipped ? ' back' : ''}" id="card" role="button" tabindex="0" style="margin-top:12px">${fc.flipped ? esc(c.d) : esc(c.t)}</div>
+    <p class="small mute">From ${chLink(c.ch)}</p>
+    <div class="row"><button data-fc="prev">← Previous</button><button class="primary" data-fc="flip">Flip</button><button data-fc="next">Next →</button><button data-fc="shuffle">Shuffle</button></div></section>`;
+}
+
+function mapView(){
+  return `<section class="band wrap"><h1>Knowledge map</h1><p>Themes, then concepts, a one-line definition, the chapters that cover each, and the POC that implements it.</p>
+    ${C.map.map(t => `<h2 style="margin-top:22px">${esc(t.theme)}</h2><table class="stack"><thead><tr><th>Concept</th><th>Definition</th><th>Chapters</th><th>POC</th></tr></thead><tbody>${
+      t.concepts.map(c => `<tr><td><b>${esc(c.name)}</b></td><td>${esc(c.def)}</td><td>${c.chapters.map(chLink).join(', ')}</td><td>${c.poc ? `<code>pocs/${esc(c.poc)}</code>` : '—'}</td></tr>`).join('')}</tbody></table>`).join('')}</section>`;
+}
+
+function checklist(){
+  const t = store.get('req', {}); const n = C.requirements.filter(r => t[r.id]).length;
+  return `<section class="band wrap"><h1>Assessment checklist</h1><p>What the book says a team should have in place. Tick only what you can show evidence for. Ticks are kept in this browser.</p>
+    <div class="stats"><div class="stat"><b>${n}/${C.requirements.length}</b>in place</div></div>
+    <div style="margin-top:12px">${C.requirements.map(r => `<label class="check"><input type="checkbox" data-req="${esc(r.id)}"${t[r.id] ? ' checked' : ''}><span><b>${esc(r.id)}</b> ${esc(r.text)}<br><span class="small mute">Source: ${esc(r.source)} · POC ${esc(r.poc)}</span></span></label>`).join('')}</div></section>`;
+}
+
+function numbers(){
+  const rows = C.lessons.flatMap(l => l.numbers.map(n => [n[0], n[1], l.id]));
+  return `<section class="band wrap"><h1>Numbers to know</h1><p>Check the book before quoting any of these in writing. Most come from the authors' own systems, contributors or Gartner.</p>
+    <input id="nf" type="search" placeholder="Filter, e.g. SLO, ClickHouse, Fin" style="font:inherit;font-size:16px;min-height:44px;width:min(420px,100%);padding:8px 12px;border:2px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink)">
+    <div class="scroll" style="margin-top:12px"><table id="nt"><thead><tr><th>Figure</th><th>What it means</th><th>Chapter</th></tr></thead><tbody>${
+      rows.map(r => `<tr><td class="num">${esc(r[0])}</td><td>${esc(r[1])}</td><td>${chLink(r[2])}</td></tr>`).join('')}</tbody></table></div></section>`;
+}
+
+function render(){
+  const h = (location.hash || '#home').slice(1);
+  const l = C.lessons.find(x => x.id === h), u = C.unread.find(x => x.id === h);
+  const views = {home, drills, quiz, flashcards, map: mapView, checklist, numbers};
+  app.innerHTML = l ? lesson(l) : u ? unreadView(u) : (views[h] || home)();
+  nav(l || u ? 'home' : (views[h] ? h : 'home'));
+  try { store.set('last', h); } catch(e){}
+  window.scrollTo(0, 0);
+}
+
+app.addEventListener('click', e => {
+  const b = e.target.closest('button,[data-fc],#card'); if (!b) return;
+  if (b.dataset.copy !== undefined){ navigator.clipboard?.writeText(b.dataset.copy).then(() => b.textContent = 'Copied', () => b.textContent = 'Copy failed'); return; }
+  if (b.dataset.done){ const d = done(); d.has(b.dataset.done) ? d.delete(b.dataset.done) : d.add(b.dataset.done); store.set('done', [...d]); b.textContent = d.has(b.dataset.done) ? 'Marked done ✓' : 'Mark as done'; return; }
+  if (b.dataset.o !== undefined){ const p = b.closest('[data-q]'); const l = byId(location.hash.slice(1)); const c = l.checks[+p.dataset.q];
+    p.querySelectorAll('button').forEach((x, i) => { x.classList.toggle('right', i === c.a); x.classList.toggle('wrong', i === +b.dataset.o && i !== c.a); });
+    p.querySelector('p').hidden = false; return; }
+  if (b.dataset.rate){ const r = store.get('drills', {}); r[b.dataset.rate] = b.dataset.v; store.set('drills', r); const s = b.closest('details').querySelector('summary');
+    s.querySelector('.chip')?.remove(); s.insertAdjacentHTML('beforeend', ` <span class="chip">${esc(b.dataset.v)}</span>`); return; }
+  if (b.dataset.qo !== undefined && !quizState.answered){ const c = quizState.qs[quizState.i]; quizState.answered = true;
+    if (+b.dataset.qo === c.a) quizState.score++;
+    document.querySelectorAll('#quizq button').forEach((x, i) => { x.classList.toggle('right', i === c.a); x.classList.toggle('wrong', i === +b.dataset.qo && i !== c.a); });
+    document.getElementById('why').hidden = false; document.querySelector('[data-quiz=next]').disabled = false; return; }
+  if (b.dataset.quiz === 'next'){ quizState.i++; quizState.answered = false; if (quizState.i >= quizState.qs.length) store.set('quizBest', Math.max(store.get('quizBest', 0), quizState.score)); render(); return; }
+  if (b.dataset.quiz === 'restart'){ quizState = null; render(); return; }
+  if (b.id === 'card' || b.dataset.fc){ const a = b.dataset.fc || 'flip', n = cards().length;
+    if (a === 'flip') fc.flipped = !fc.flipped; else if (a === 'next'){ fc.i = (fc.i + 1) % n; fc.flipped = false; }
+    else if (a === 'prev'){ fc.i = (fc.i - 1 + n) % n; fc.flipped = false; } else if (a === 'shuffle'){ fc.i = Math.floor(Math.random() * n); fc.flipped = false; }
+    render(); }
+});
+app.addEventListener('change', e => {
+  if (e.target.dataset.req){ const t = store.get('req', {}); t[e.target.dataset.req] = e.target.checked; store.set('req', t); render(); }
+  if (e.target.id === 'fcpart'){ fc = {i: 0, flipped: false, part: e.target.value}; render(); }
+});
+app.addEventListener('input', e => {
+  if (e.target.id === 'nf'){ const q = e.target.value.toLowerCase(); for (const tr of document.querySelectorAll('#nt tbody tr')) tr.hidden = !tr.textContent.toLowerCase().includes(q); }
+});
+document.addEventListener('keydown', e => {
+  if ((location.hash || '').slice(1) !== 'flashcards' || e.target.matches('input,select')) return;
+  const map = {' ': 'flip', ArrowRight: 'next', ArrowLeft: 'prev'}; const a = map[e.key]; if (!a) return;
+  e.preventDefault(); document.querySelector(`[data-fc=${a}]`)?.click();
+});
+window.addEventListener('hashchange', render);
+fetch('course.json').then(r => r.json()).then(j => { C = j; render(); })
+  .catch(() => { app.innerHTML = '<div class="band wrap"><p>The course data could not be loaded.</p></div>'; });
+}
+</script>
+</body>
+</html>
