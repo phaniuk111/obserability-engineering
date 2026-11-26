@@ -1,0 +1,67 @@
+# OpenTelemetry Collector, GATEWAY role (book ch7, ch15, ch16).
+# Agents (DaemonSet/sidecar) forward OTLP here. The gateway does the heavy
+# lifting: PII redaction, tail sampling on whole traces, span->metric
+# derivation, and fan-out routing. Swapping a vendor = editing exporters.
+receivers:
+  otlp:
+    protocols:
+      grpc: { endpoint: 0.0.0.0:4317 }
+      http: { endpoint: 0.0.0.0:4318 }
+
+processors:
+  memory_limiter: { check_interval: 1s, limit_percentage: 80, spike_limit_percentage: 20 }
+  # Defence in depth for user data: hash ids, drop known-sensitive keys.
+  attributes/pii:
+    actions:
+      - { key: user.email, action: hash }
+      - { key: user.id, action: hash }
+      - { key: http.request.header.authorization, action: delete }
+  transform/redact:
+    error_mode: ignore
+    log_statements:
+      - context: log
+        statements:
+          - replace_pattern(body, "[\\w.+-]+@[\\w-]+\\.[\\w.]+", "[REDACTED_EMAIL]")
+  k8sattributes: {}          # enrich with pod/node/namespace
+  resourcedetection: { detectors: [env, ec2, eks] }
+  # Keep every error and every slow trace, 10% of the rest (decided on the whole trace).
+  tail_sampling:
+    decision_wait: 10s
+    num_traces: 100000
+    policies:
+      - { name: errors, type: status_code, status_code: { status_codes: [ERROR] } }
+      - { name: slow, type: latency, latency: { threshold_ms: 500 } }
+      - { name: baseline, type: probabilistic, probabilistic: { sampling_percentage: 10 } }
+  batch: { send_batch_size: 8192, timeout: 2s }
+
+connectors:
+  # RED histograms derived from spans *before* sampling, so metrics stay accurate.
+  spanmetrics:
+    histogram: { explicit: { buckets: [10ms, 50ms, 100ms, 250ms, 500ms, 1s, 4s] } }
+    dimensions: [{ name: http.route }, { name: http.request.method }]
+
+exporters:
+  otlphttp/observability_vendor: { endpoint: "${env:VENDOR_OTLP_ENDPOINT}", headers: { x-api-key: "${env:VENDOR_KEY}" } }
+  awss3/archive: { s3uploader: { region: eu-west-2, s3_bucket: "${env:ARCHIVE_BUCKET}", s3_prefix: telemetry } }
+  prometheusremotewrite/amp: { endpoint: "${env:AMP_REMOTE_WRITE_URL}" }
+
+extensions:
+  health_check: {}
+  zpages: {}
+  file_storage/queue: { directory: /var/lib/otelcol/queue }   # persistent buffer across restarts
+
+service:
+  extensions: [health_check, zpages, file_storage/queue]
+  pipelines:
+    traces/in:
+      receivers: [otlp]
+      processors: [memory_limiter, k8sattributes, resourcedetection, attributes/pii]
+      exporters: [spanmetrics, otlphttp/observability_vendor]   # (in prod put tail_sampling before the vendor export)
+    metrics/red:
+      receivers: [spanmetrics]
+      processors: [batch]
+      exporters: [prometheusremotewrite/amp]
+    logs:
+      receivers: [otlp]
+      processors: [memory_limiter, attributes/pii, transform/redact, batch]
+      exporters: [otlphttp/observability_vendor, awss3/archive]
