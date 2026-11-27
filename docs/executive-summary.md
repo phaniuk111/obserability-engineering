@@ -20,6 +20,6 @@ The same idea repeats at every level. A precise, context-rich signal closes a fe
 
 Lead with an outcome, name the mechanism, give one number. Example: "Event-based SLIs: a minute where 6% of requests are slow burns 6% of budget, not 100%, which matters at four nines where the month's budget is about 4.4 minutes." The course page has an interview line per chapter and a drill bank.
 
-## Not covered
+## Coverage
 
-Chapters 30–32 (vendor partnerships, instrumentation for observability teams, where we go from here) were not read: the browser session disconnected. Some figures in Part IV/V were checked from captions only, without viewing the image (noted in docs/progress.md).
+All 32 chapters were read in full and paraphrased; chapters 30–32 were added in the second pass on 2026-11-27. Figures were viewed for Parts I–III and checked from captions for some of Parts IV–V. Numbers in the course were re-checked against the chapter text in that pass. Technical claims that depend on current tooling (Collector components, AWS services, semantic conventions) were checked against official documentation; see docs/sources.md.

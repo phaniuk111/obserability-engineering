@@ -78,10 +78,14 @@ Retriever's hybrid: append-only segments per tenant, closed at 1 hour, 250k rows
 
 ## Exercise
 
-Run pocs/06_columnar_store; add a 'max' aggregation for duration_ms grouped by service.
+Lab 7: run `make q F=07_storage`, add a bloom-filter skip index on the attribute values, and compare the plan for query 7d.
 
 ## Takeaways
 
 - Only time is privileged
 - Columns + segments + parallel scans
 - Wrong abstraction = hard problems
+
+## Hands-on
+
+[Lab 7: Storage](https://github.com/phaniuk111/obserability-engineering/blob/main/lab/labs/07-storage.md)

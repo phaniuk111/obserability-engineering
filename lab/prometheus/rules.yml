@@ -1,0 +1,55 @@
+# SLO alerting on metrics derived from spans (lab 4). Target for the lab: 99%.
+# Burn rate = observed bad ratio / (1 - target). Multi-window, multi-burn-rate alerts
+# follow the SRE Workbook, ch5: https://sre.google/workbook/alerting-on-slos/
+#   14.4x over 1h AND 5m  = 2% of a 30-day budget gone in an hour  -> page
+#   6x    over 6h AND 30m = 5% gone in six hours                   -> page
+# The long window proves it matters; the short window proves it is still happening.
+groups:
+  - name: checkout-slo-recording
+    rules:
+      - record: slo:checkout_error_ratio:rate1m
+        expr: |
+          sum(rate(shop_calls_total{service_name="storefront",span_kind="SPAN_KIND_SERVER",http_route="/checkout",status_code="STATUS_CODE_ERROR"}[1m]))
+          / sum(rate(shop_calls_total{service_name="storefront",span_kind="SPAN_KIND_SERVER",http_route="/checkout"}[1m]))
+      - record: slo:checkout_error_ratio:rate5m
+        expr: |
+          sum(rate(shop_calls_total{service_name="storefront",span_kind="SPAN_KIND_SERVER",http_route="/checkout",status_code="STATUS_CODE_ERROR"}[5m]))
+          / sum(rate(shop_calls_total{service_name="storefront",span_kind="SPAN_KIND_SERVER",http_route="/checkout"}[5m]))
+      - record: slo:checkout_error_ratio:rate30m
+        expr: |
+          sum(rate(shop_calls_total{service_name="storefront",span_kind="SPAN_KIND_SERVER",http_route="/checkout",status_code="STATUS_CODE_ERROR"}[30m]))
+          / sum(rate(shop_calls_total{service_name="storefront",span_kind="SPAN_KIND_SERVER",http_route="/checkout"}[30m]))
+      - record: slo:checkout_error_ratio:rate1h
+        expr: |
+          sum(rate(shop_calls_total{service_name="storefront",span_kind="SPAN_KIND_SERVER",http_route="/checkout",status_code="STATUS_CODE_ERROR"}[1h]))
+          / sum(rate(shop_calls_total{service_name="storefront",span_kind="SPAN_KIND_SERVER",http_route="/checkout"}[1h]))
+      - record: slo:checkout_error_ratio:rate6h
+        expr: |
+          sum(rate(shop_calls_total{service_name="storefront",span_kind="SPAN_KIND_SERVER",http_route="/checkout",status_code="STATUS_CODE_ERROR"}[6h]))
+          / sum(rate(shop_calls_total{service_name="storefront",span_kind="SPAN_KIND_SERVER",http_route="/checkout"}[6h]))
+      # Latency SLI from the histogram: share of checkouts slower than 500 ms.
+      - record: slo:checkout_slow_ratio:rate1m
+        expr: |
+          1 - sum(rate(shop_duration_seconds_bucket{service_name="storefront",span_kind="SPAN_KIND_SERVER",http_route="/checkout",le="0.5"}[1m]))
+              / sum(rate(shop_duration_seconds_count{service_name="storefront",span_kind="SPAN_KIND_SERVER",http_route="/checkout"}[1m]))
+      - record: slo:checkout_slow_ratio:rate5m
+        expr: |
+          1 - sum(rate(shop_duration_seconds_bucket{service_name="storefront",span_kind="SPAN_KIND_SERVER",http_route="/checkout",le="0.5"}[5m]))
+              / sum(rate(shop_duration_seconds_count{service_name="storefront",span_kind="SPAN_KIND_SERVER",http_route="/checkout"}[5m]))
+
+  - name: checkout-slo-alerts
+    rules:
+      - alert: CheckoutErrorBudgetFastBurn
+        expr: slo:checkout_error_ratio:rate1h > (14.4 * 0.01) and slo:checkout_error_ratio:rate5m > (14.4 * 0.01)
+        labels: { severity: page }
+        annotations: { summary: "Checkout is burning its error budget 14.4x too fast" }
+      - alert: CheckoutErrorBudgetSlowBurn
+        expr: slo:checkout_error_ratio:rate6h > (6 * 0.01) and slo:checkout_error_ratio:rate30m > (6 * 0.01)
+        labels: { severity: page }
+        annotations: { summary: "Checkout is burning its error budget 6x too fast" }
+      # Short windows so the lab fires within a few minutes of `make fault-on`. Too twitchy for production.
+      - alert: CheckoutLatencyBudgetBurnLab
+        expr: slo:checkout_slow_ratio:rate5m > (4 * 0.01) and slo:checkout_slow_ratio:rate1m > (4 * 0.01)
+        for: 1m
+        labels: { severity: lab }
+        annotations: { summary: "More than 4% of checkouts are slower than 500 ms (burn rate over 4)" }

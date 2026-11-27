@@ -43,7 +43,7 @@ The brute-force part (diffing every dimension inside vs outside the selection) i
 |---|---|---|
 | Core analysis loop | Hypothesis-driven, iterative slicing | n/a (method) |
 | BubbleUp | Automated baseline vs selection diff | CloudWatch Contributor Insights (top-N only) |
-| AIOps (Gartner 2017) | ML for alert noise/anomaly | DevOps Guru |
+| AIOps (Gartner 2017) | ML for alert noise/anomaly | Amazon DevOps Guru; CloudWatch anomaly detection |
 
 ## Interview line
 
@@ -62,10 +62,14 @@ The brute-force part (diffing every dimension inside vs outside the selection) i
 
 ## Exercise
 
-Run pocs/03_bubbleup; then change the synthetic data so two causes overlap and watch the loop iterate.
+Lab 3: switch the fault on and run the BubbleUp query. Then change the fault so it needs two attributes at once and see whether the query still surfaces it.
 
 ## Takeaways
 
 - Method beats memory
 - Automate the diffing; humans interpret
 - Describe your fields for humans and agents
+
+## Hands-on
+
+[Lab 3: Find the culprit without a hypothesis](https://github.com/phaniuk111/obserability-engineering/blob/main/lab/labs/03-core-analysis-loop.md)

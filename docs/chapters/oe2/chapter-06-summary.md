@@ -73,3 +73,15 @@ Write the wide-event schema for one of your endpoints: 30+ attributes grouped by
 - Hundreds of attributes is normal
 - Design events for the queries you'll run
 - Domain fields are the most valuable and only you can add them
+
+## Hands-on
+
+[Lab 1: Follow one request](https://github.com/phaniuk111/obserability-engineering/blob/main/lab/labs/01-traces.md)
+
+## Since the book (checked against documentation, 2026-11-27)
+
+- Trace flags are a bit field: only the lowest bit means 'sampled', and version `ff` is invalid. Trace Context Level 2 adds a 'random trace id' flag, so compare bits, not the string `01`.
+
+## Official documentation
+
+- [W3C Trace Context](https://www.w3.org/TR/trace-context/): The traceparent and tracestate headers, field by field

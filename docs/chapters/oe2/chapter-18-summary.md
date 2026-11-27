@@ -68,10 +68,18 @@ Jobs form a DAG. Only the critical path matters: if Rust dominates, speeding up 
 
 ## Exercise
 
-Run pocs/09_cost_and_ci CI simulation; then pocs/02_mini_tracer critical path on your own workflow durations.
+Export the step timings of one CI run, draw the dependency graph and mark the critical path. Which step would you speed up first, and why not the slowest one?
 
 ## Takeaways
 
 - CI is production on a deadline
 - Optimise the critical path only
 - Under 7 minutes keeps devs in flow
+
+## Since the book (checked against documentation, 2026-11-27)
+
+- OpenTelemetry now has CI/CD semantic conventions (first attributes in v1.27.0), so pipeline traces can use standard names.
+
+## Official documentation
+
+- [OpenTelemetry semantic conventions: CI/CD](https://opentelemetry.io/docs/specs/semconv/cicd/): Pipeline run and task spans

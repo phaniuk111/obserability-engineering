@@ -23,7 +23,7 @@ class H(http.server.SimpleHTTPRequestHandler):
 srv = socketserver.TCPServer(("127.0.0.1", 0), H)
 port = srv.server_address[1]
 threading.Thread(target=srv.serve_forever, daemon=True).start()
-views = ["home", "ch01", "ch12", "ch13", "ch17", "ch29", "drills", "map"]
+views = ["home", "ch01", "ch12", "ch13", "ch17", "ch29", "ch15", "ch16", "ch30", "drills", "map"]
 errs = []
 with sync_playwright() as p:
     b = p.chromium.launch(executable_path="/usr/bin/google-chrome", args=["--no-sandbox"])
@@ -36,7 +36,7 @@ with sync_playwright() as p:
             overflow = pg.evaluate("document.documentElement.scrollWidth > window.innerWidth + 1")
             if overflow:
                 errs.append(f"horizontal overflow {v} {w}")
-            pg.screenshot(path=os.path.join(OUT, f"{v}-{scheme}-{w}.png"), full_page=(v in ("ch12", "ch13", "ch17")))
+            pg.screenshot(path=os.path.join(OUT, f"{v}-{scheme}-{w}.png"), full_page=(v in ("ch12", "ch13", "ch17", "ch15", "ch16", "ch30")))
     b.close()
 srv.shutdown()
 print("errors:", errs or "none")

@@ -45,9 +45,9 @@ Source: O'Reilly Learning, read in the user's browser via
 | ch27 | Diagnosing Your Observability Investment | 13173 | 0 | read in full |
 | ch28 | The Organizational Shift | 42242 | 0 | read in full |
 | ch29 | Build Versus Buy (Versus Open Source) | 54254 | 3 | read in full |
-| ch30 | The Art and Science of Vendor Partnerships | 58495 | 0 | NOT YET READ (browser disconnected) |
-| ch31 | Instrumentation for Observability Teams | 34320 | 0 | NOT YET READ (browser disconnected) |
-| ch32 | Where Do We Go From Here? | 20754 | 0 | NOT YET READ (browser disconnected) |
+| ch30 | The Art and Science of Vendor Partnerships | 58495 | 0 | read in full (2026-11-27) |
+| ch31 | Instrumentation for Observability Teams | 34320 | 0 | read in full (2026-11-27) |
+| ch32 | Where Do We Go From Here? | 20754 | 0 | read in full (2026-11-27) |
 
 ## Method
 - In-page JS: fetch chapter HTML, DOMParser → headings/paragraphs/lists/tables/captions/sidebars, stored in `window.__ch[file]`.
@@ -55,33 +55,35 @@ Source: O'Reilly Learning, read in the user's browser via
 - Figures: open `/files/assets/<image>` in a tab and screenshot.
 - Notes: `notes/raw-notes.md` (append per chapter); summaries: `docs/chapters/oe2/chapter-NN-summary.md`.
 
-## Outputs (confirmed 2026-11-26)
-- Interactive, interview-focused course page (artifact) + runnable POCs. User asked for more interview focus and practical, less theory.
-- Repo: phaniuk111/obserability-engineering (cloned at /home/claude/obserability-engineering).
-- Supporting docs kept lean: raw notes, synthesis data, generated docs.
+## Outputs (confirmed 2026-11-26, revised 2026-11-27)
+- Interactive, interview-focused course page (artifact). User asked for more interview focus and practical, less theory.
+- 2026-11-27: user said the Python POCs "don't make sense" and chose a real stack that runs locally, to be run by them (I cannot start Docker).
+- Repo named by the user: https://github.com/phaniuk111/obserability-engineering
 
 ## Artifacts
-- Course page (private artifact): https://claude.ai/artifact/VvSM4vnGatp4ghNCHhxH5y (slug ea35ec1c-c709-465b-87b1-97eecdd6a9b8, version 1795731588-23f2). Files: course/site/index.html, course.json, diagrams.js.
-- POCs: pocs/01..10 (73 tests), pocs/otel/gateway-collector.yaml, pocs/terraform/telemetry_archive/main.tf (not terraform-validated: no terraform binary here).
-- Docs: docs/executive-summary.md, knowledge-map.md, requirements.md, claims.md, chapters/oe2/chapter-NN-summary.md.
+- Course: https://claude.ai/artifact/VvSM4vnGatp4ghNCHhxH5y (slug ea35ec1c-c709-465b-87b1-97eecdd6a9b8). Files: index.html, course.json, diagrams.js.
+- Lab: lab/ (app on the real OTel SDK, docker-compose with Collector, ClickHouse, Prometheus, Jaeger, Grafana; 8 lab guides; smoke-test.sh).
+- Production-shaped Collector configs: lab/collector/production/. Terraform: lab/aws/terraform/telemetry_archive/.
 
 ## Rebuild commands
-- python3 course/build.py  (content in course/content/p1..p6.py, synthesis.py, gapfill.py; diagrams in course/diagrams.py)
-- pocs/run_all_tests.sh
-- NODE_PATH=/path/to/node_modules node course/test_page.js  (jsdom 24)
-- python3 course/screenshots.py  (playwright + /usr/bin/google-chrome; output build/tmp/shots, gitignored)
+- python3 course/build.py                      (course.json, diagrams.js, docs/*.md)
+- NODE_PATH=<jsdom dir> node course/test_page.js   (68 page checks)
+- cd lab && make test                           (19 tests: real SDK + OTLP + embedded ClickHouse; needs flask, opentelemetry-*, chdb, pyyaml)
+- cd lab && make smoke                          (needs Docker; not run by me)
 - python3 course/gap_check.py
-- Republish: publish_files with slug above, mode patch, base_version = last version.
+
+## Verification status
+- Run here: app instrumentation, OTLP export, every SQL file in lab/clickhouse/queries (on chdb), Collector config lint, page tests, screenshots.
+- Not run here: docker-compose stack, the Collector itself, Prometheus rules, Grafana provisioning, Terraform validate/apply.
+- Numbers in the course were re-checked against chapter text in the browser on 2026-11-27 (22 unmatched tokens, all traced to figures, spelled-out numbers or code blocks).
 
 ## Open items
-- Read ch30, ch31, ch32 when the Chrome side panel reconnects (book tab id 1648546696; figure tab 1648546764 opened by me, close it at the end).
-- Restore the user's book tab (it was replaced with injected text; navigate back to https://learning.oreilly.com/library/view/observability-engineering-2nd/9781098179915/) and close the figure tab I opened (id 1648546764). Not done: browser disconnected.
-- After ch30-32: add lessons to course/content/p6.py (replace UNREAD), notes, rerun build + gap check + tests, republish, push.
-- Figure coverage: ch1, ch5, ch6 (3 of 7), ch7, ch8 (2 of 3), ch10, ch12 (5 of 12), ch13 (3 of 6), ch14 (3 of 25) viewed. Other figures were judged from captions and surrounding text only (ch15, ch16, ch17, ch20, ch22, ch24, ch25, ch29 figures not opened).
+- User to run `make smoke` and report failures (most likely spot: span-metric names in prometheus/rules.yml for the pinned Collector image).
+- Some Part IV/V figures were checked from captions only.
 
 ## Log
-- 2026-11-26: Pass 0. Spine fetched (47 entries, 32 chapters). All chapter files return 200. Progress file created.
-- 2026-11-26: Pass 1. Read preface, foreword, ch1–ch29 in full via injected text + get_page_text; key figures screenshotted. Notes in notes/raw-notes.md. Browser side panel disconnected at ch30.
-- 2026-11-26: Built 10 POCs (73 tests pass), OTel gateway config, Terraform example. Pushed.
-- 2026-11-26: Built course (29 lessons, 13 SVG diagrams, 18 drills + 29 practice Qs, 63 quiz checks, flashcards, map, checklist, numbers). jsdom 55/55 checks; screenshots light/dark/390px; no overflow, no page errors. Published artifact.
-- 2026-11-26: Pass 4 gap check: 180 misses → reviewed by hand → 13 lessons got gap-fill items (course/content/gapfill.py) → 128 remaining are names already described in words, code identifiers or bylines. Reverse check: no course number absent from notes except my own hypotheticals/quiz distractors. Republished.
+- 2026-11-26: Pass 0. Structure captured from the O'Reilly spine API.
+- 2026-11-26: Pass 1. Read preface, foreword, ch1–ch29 in full; key figures viewed. Notes in notes/raw-notes.md.
+- 2026-11-26: Built 10 stdlib POCs, a gateway Collector config and a Terraform example; course built, tested, published; gap check folded in. Pushed.
+- 2026-11-27: Second pass. Read ch30–32 in full; lessons added. Verified technical claims against official docs (W3C Trace Context, OTel Collector components, semantic conventions, ClickHouse settings, AWS service status); fixes and links in docs/sources.md and per lesson.
+- 2026-11-27: Replaced the stdlib POCs with lab/ (real stack) at the user's request. Collector configs rebuilt as two tiers; Terraform tightened.

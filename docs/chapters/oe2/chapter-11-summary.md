@@ -70,10 +70,18 @@ SLOs alert on symptoms of user pain (the what). Observability explains the why. 
 
 ## Exercise
 
-Write an event SLI for your most important endpoint with an explicit eligibility clause; run it in pocs/04_slo_burn.checkout_sli style.
+Lab 4: rewrite the SLI in `lab/clickhouse/queries/04_slo.sql` for another endpoint, with an explicit eligibility clause.
 
 ## Takeaways
 
 - Alert on symptoms; debug causes with observability
 - Event-based SLIs
 - Roll out where pain is, not where teams already excel
+
+## Hands-on
+
+[Lab 4: SLOs and burn alerts](https://github.com/phaniuk111/obserability-engineering/blob/main/lab/labs/04-slo.md)
+
+## Since the book (checked against documentation, 2026-11-27)
+
+- Check the arithmetic in the chapter's LLM transcript: 99.95% availability allows about 4.4 hours of downtime a year (about 22 minutes a month), not the '~42 minutes' the model says. It makes the chapter's own point: treat the model as a draft generator and verify.

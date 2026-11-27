@@ -51,7 +51,7 @@ Why closing it is rare: the economics of cognitive load. Without precision data,
 
 ## AWS mapping
 
-- Ops loop: CloudWatch alarms + Incident Manager
+- Ops loop: CloudWatch alarms/SLOs into your paging tool (Systems Manager Incident Manager is on AWS's maintenance list)
 - Dev loop: deploy event → pre-filtered cohort comparison link to the author
 
 ## Practice question

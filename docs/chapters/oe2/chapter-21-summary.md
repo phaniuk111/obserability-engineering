@@ -69,10 +69,15 @@ The flywheel: production traces become eval cases, evals guide harness and promp
 
 ## Exercise
 
-Run pocs/08_ai_sandwich LLM tests; add a feedback-weighted eval promotion rule.
+Add `gen_ai.request.model` and the token-count attributes to one LLM call you own, then compute cost per request from the spans.
 
 ## Takeaways
 
 - Telemetry fuels evals; evals fuel fixes
 - Code fixes beat prompt tweaks surprisingly often
 - Describe fields; models impute meaning
+
+## Official documentation
+
+- [GenAI semantic conventions: spans](https://opentelemetry.io/docs/specs/semconv/gen-ai/gen-ai-spans/): gen_ai.* attributes for model calls
+- [GenAI conventions repository](https://github.com/open-telemetry/semantic-conventions-genai): Where the gen_ai.* definitions now live

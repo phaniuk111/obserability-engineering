@@ -66,10 +66,14 @@ So capture one wide event and derive the metric, the log narrative or the trace 
 
 ## Exercise
 
-Run pocs/02_mini_tracer and pocs/01_wide_events tests; then extend the tracer to record span events.
+Labs 1 and 2: open a checkout trace in Jaeger, then run query 2d and explain why the average of averages differs from the true average.
 
 ## Takeaways
 
 - One record, many views
 - Aggregation is the defining strength and weakness of metrics
 - Traces = logs + IDs + parent links
+
+## Hands-on
+
+[Lab 2: Wide events and high cardinality](https://github.com/phaniuk111/obserability-engineering/blob/main/lab/labs/02-wide-events.md)

@@ -1,0 +1,87 @@
+# The lab's single Collector. Same shape as production/gateway-collector.yaml, with
+# ClickHouse, Prometheus and Jaeger standing in for S3, AMP and a vendor.
+#
+#   apps --OTLP--> [scrub PII] --+--> span metrics (100% of spans) --> Prometheus
+#                                +--> ClickHouse otel_traces (everything)
+#                                +--> [tail sampling] --> ClickHouse otel_traces_sampled, Jaeger
+#
+# Written for the image pinned in docker-compose.yaml (otelcol-contrib 0.150.0), so it uses
+# that release's component ids: `otlp`, and a `batch` processor. Newer releases rename the
+# OTLP exporters (otlp_grpc / otlp_http) and move batching into exporters; the production
+# files show that form. I could not run a Collector while writing this: smoke-test.sh is
+# the check.
+receivers:
+  otlp:
+    protocols:
+      grpc: { endpoint: 0.0.0.0:4317 }
+      http: { endpoint: 0.0.0.0:4318 }
+
+processors:
+  memory_limiter: { check_interval: 1s, limit_mib: 400, spike_limit_mib: 100 }
+  # Lab 6: the email never reaches storage in plain text. Hashing keeps it joinable.
+  attributes/pii:
+    actions:
+      - { key: user.email, action: hash }
+      - { key: http.request.header.authorization, action: delete }
+  # ClickHouse wants few large inserts, not many small ones (ch14).
+  batch: { timeout: 2s, send_batch_size: 5000 }
+  # Lab 5: keep every error, every trace slower than 500 ms, and 10% of the rest.
+  tail_sampling:
+    decision_wait: 5s
+    num_traces: 50000
+    policies:
+      - { name: errors, type: status_code, status_code: { status_codes: [ERROR] } }
+      - { name: slow, type: latency, latency: { threshold_ms: 500 } }
+      - { name: baseline, type: probabilistic, probabilistic: { sampling_percentage: 10 } }
+
+connectors:
+  # RED metrics from every span, before sampling. Metric names in Prometheus:
+  # shop_calls_total and shop_duration_seconds_bucket / _count / _sum.
+  spanmetrics:
+    namespace: shop
+    histogram: { unit: s, explicit: { buckets: [25ms, 50ms, 100ms, 250ms, 500ms, 1s, 2s] } }
+    dimensions: [{ name: http.route }]
+    metrics_flush_interval: 10s
+  forward/to_sampling: {}
+
+exporters:
+  clickhouse/all:
+    endpoint: tcp://clickhouse:9000
+    database: otel
+    username: otel
+    password: otel
+    traces_table_name: otel_traces
+    create_schema: true        # fine for a lab; manage the schema yourself in production
+    ttl: 72h
+  clickhouse/sampled:
+    endpoint: tcp://clickhouse:9000
+    database: otel
+    username: otel
+    password: otel
+    traces_table_name: otel_traces_sampled
+    create_schema: true
+    ttl: 72h
+  otlp/jaeger:
+    endpoint: jaeger:4317
+    tls: { insecure: true }
+  prometheus:
+    endpoint: 0.0.0.0:8889
+
+extensions:
+  health_check: { endpoint: 0.0.0.0:13133 }
+
+service:
+  extensions: [health_check]
+  pipelines:
+    traces/in:
+      receivers: [otlp]
+      processors: [memory_limiter, attributes/pii, batch]
+      exporters: [spanmetrics, clickhouse/all, forward/to_sampling]
+    traces/sampled:
+      receivers: [forward/to_sampling]
+      processors: [tail_sampling, batch]
+      exporters: [clickhouse/sampled, otlp/jaeger]
+    metrics:
+      receivers: [otlp, spanmetrics]
+      processors: [memory_limiter, batch]
+      exporters: [prometheus]

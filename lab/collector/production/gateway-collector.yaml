@@ -1,0 +1,99 @@
+# OpenTelemetry Collector, GATEWAY / sampling tier for a real deployment (book ch7, ch15, ch16).
+#
+#   apps -> agent-collector.yaml (DaemonSet) --load_balancing by trace id--> this tier -> backends
+#
+# Scrubs PII, derives RED metrics from ALL spans, tail-samples whole traces, keeps a
+# full-fidelity archive in S3, and fans out. Swapping a vendor = editing exporters.
+#
+# Checked against the upstream docs in Nov 2026 (links in README.md). Not run through a
+# Collector binary; before you deploy:  otelcol-contrib validate --config=<file>
+#
+# Component ids follow current upstream names. On older Collector / ADOT builds use
+# `otlphttp` for `otlp_http`, and a `batch` processor instead of `sending_queue.batch`.
+receivers:
+  otlp:
+    protocols:
+      grpc: { endpoint: 0.0.0.0:4317 }
+      http: { endpoint: 0.0.0.0:4318 }
+
+processors:
+  # First in every pipeline, so the Collector refuses data before it runs out of memory.
+  memory_limiter: { check_interval: 1s, limit_percentage: 80, spike_limit_percentage: 20 }
+  # Hash ids (same input -> same hash, so joins still work), drop known-sensitive keys.
+  attributes/pii:
+    actions:
+      - { key: user.email, action: hash }
+      - { key: user.id, action: hash }
+      - { key: http.request.header.authorization, action: delete }
+  transform/redact:
+    error_mode: ignore
+    log_statements:
+      - context: log
+        statements:
+          - replace_pattern(body, "[\\w.+-]+@[\\w-]+\\.[\\w.]+", "[REDACTED_EMAIL]")
+  # Keep every error and every slow trace, 10% of the rest. Policies are OR-ed. The decision
+  # is per whole trace, so every span of a trace must reach the same Collector instance.
+  tail_sampling:
+    decision_wait: 10s          # default 30s; how long to wait for a trace's spans
+    num_traces: 100000          # traces held in memory; size it to decision_wait x traces/s
+    policies:
+      - { name: errors, type: status_code, status_code: { status_codes: [ERROR] } }
+      - { name: slow, type: latency, latency: { threshold_ms: 500 } }
+      - { name: baseline, type: probabilistic, probabilistic: { sampling_percentage: 10 } }
+
+connectors:
+  # RED histograms derived from spans BEFORE sampling, so rates and percentiles stay true.
+  spanmetrics:
+    histogram: { explicit: { buckets: [10ms, 50ms, 100ms, 250ms, 500ms, 1s, 4s] } }
+    dimensions: [{ name: http.route }, { name: http.request.method }]
+  forward/to_sampling: {}
+
+exporters:
+  otlp_http/observability_vendor:
+    endpoint: "${env:VENDOR_OTLP_ENDPOINT}"
+    headers: { x-api-key: "${env:VENDOR_KEY}" }
+    retry_on_failure: { enabled: true, max_elapsed_time: 10m }
+    sending_queue:
+      storage: file_storage/queue        # queue survives a Collector restart
+      queue_size: 5000
+      batch: { enabled: true, flush_timeout: 2s }   # exporter-level batching replaces the batch processor
+  # Everything, unsampled, to cheap storage: the fallback when someone asks for a trace
+  # that sampling dropped (ch16, ch31).
+  awss3/archive:
+    s3uploader:
+      region: eu-west-2
+      s3_bucket: "${env:ARCHIVE_BUCKET}"
+      s3_prefix: telemetry
+      compression: gzip
+    marshaler: otlp_json
+  prometheusremotewrite/amp:
+    endpoint: "${env:AMP_REMOTE_WRITE_URL}"
+    auth: { authenticator: sigv4auth }   # AMP only accepts SigV4-signed requests
+    # With more than one gateway replica each emits the same series; a per-replica label
+    # stops them overwriting each other.
+    external_labels: { collector: "${env:HOSTNAME}" }
+
+extensions:
+  health_check: {}
+  zpages: {}
+  file_storage/queue: { directory: /var/lib/otelcol/queue }
+  sigv4auth: { region: eu-west-2, service: aps }
+
+service:
+  extensions: [health_check, zpages, file_storage/queue, sigv4auth]
+  pipelines:
+    traces/in:
+      receivers: [otlp]
+      processors: [memory_limiter, attributes/pii]
+      exporters: [spanmetrics, awss3/archive, forward/to_sampling]
+    traces/sampled:
+      receivers: [forward/to_sampling]
+      processors: [tail_sampling]
+      exporters: [otlp_http/observability_vendor]
+    metrics/red:
+      receivers: [spanmetrics]
+      exporters: [prometheusremotewrite/amp]
+    logs:
+      receivers: [otlp]
+      processors: [memory_limiter, attributes/pii, transform/redact]
+      exporters: [otlp_http/observability_vendor, awss3/archive]

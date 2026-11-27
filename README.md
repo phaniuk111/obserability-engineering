@@ -1,26 +1,32 @@
-# Observability Engineering (2nd ed.): interview-focused study kit
+# Observability Engineering (2nd edition): study kit
 
-A study kit built from a chapter-by-chapter read of *Observability Engineering, 2nd Edition* (Majors, Fong-Jones, Miranda, with Parker; O'Reilly 2026). Everything is paraphrased; nothing reproduces the book's text.
+An interview-focused course and a hands-on lab built from *Observability Engineering, 2nd Edition* (Majors, Fong-Jones, Miranda; O'Reilly 2026). Everything is paraphrased; read the book for the original.
 
-**Coverage:** preface, foreword and chapters 1–29 read in full. Chapters 30–32 aren't read yet: the browser session ended before them. See `docs/progress.md`.
+| Part | Where | What it is |
+|---|---|---|
+| Course | https://claude.ai/artifact/VvSM4vnGatp4ghNCHhxH5y, source in `course/` | One lesson per chapter (32), interview lines, practice questions, drills, flashcards, AWS mapping, official-doc links |
+| Lab | [`lab/`](lab/README.md) | Three services on the real OpenTelemetry SDK, Collector, ClickHouse, Prometheus, Jaeger, Grafana. Eight labs: tracing, wide events, finding a fault without a hypothesis, SLO burn alerts, sampling, pipeline, storage, production shape |
+| Docs | `docs/` | Executive summary, per-chapter summaries, knowledge map, requirements checklist, numbers, [official sources](docs/sources.md) |
+| Notes | `notes/raw-notes.md` | Paraphrased reading notes for every chapter |
 
-## What's here
-
-| Path | What |
-|---|---|
-| `course/` | Interactive course: one lesson per chapter (idea, interview line, AWS mapping, practice Q + model answer, checks), plus interview drills, quiz, flashcards, knowledge map, checklist and numbers. Published as a private claude.ai artifact. |
-| `pocs/` | 10 runnable POCs (Python stdlib, 73 tests): wide events, a tracer, BubbleUp, SLO burn alerts, sampling, a columnar store, a telemetry pipeline, the AI sandwich, cost/CI maths, mobile ring buffer. Plus an OTel gateway config and Terraform. |
-| `docs/` | Executive summary, knowledge map, requirements checklist, numbers to know, per-chapter summaries, progress log. Generated from the same data as the course. |
-| `notes/raw-notes.md` | Detailed reading notes per chapter (paraphrased). |
-
-## Rebuild and verify
+## Start here
 
 ```bash
-python3 course/build.py                 # course/site/course.json, diagrams.js and docs/*.md
-pocs/run_all_tests.sh                   # 73 POC tests
-NODE_PATH=<dir with jsdom> node course/test_page.js   # 55 page checks in jsdom
-python3 course/screenshots.py           # light/dark/phone screenshots (playwright + Chrome)
-python3 course/gap_check.py             # notes vs course gap report
+cd lab
+make up            # Docker: starts the stack and prints URLs
+make smoke         # checks the stack end to end
+make test          # no Docker: real SDK + OTLP + embedded ClickHouse, runs every lab query
 ```
 
-Check the book before quoting any number in writing (`docs/claims.md`).
+## Rebuild the course
+
+```bash
+python3 course/build.py
+NODE_PATH=/path/to/node_modules node course/test_page.js    # needs jsdom
+```
+
+## Coverage and limits
+
+- All 32 chapters read in full. Some figures in Parts IV–V were checked from captions only.
+- Technical details that age (Collector component names, AWS services, semantic conventions) were checked against official documentation on 2026-11-27; each lesson lists what changed since the book.
+- The lab's app, OTLP export and SQL were run and tested. The Docker stack, the Collector configs, Prometheus rules, Grafana provisioning and Terraform were written against the docs and linted, not executed. `lab/README.md` has the table.

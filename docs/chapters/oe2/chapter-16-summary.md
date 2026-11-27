@@ -57,7 +57,7 @@ Agent + gateway is the default production pattern. Multi-tier (local then region
 ## AWS mapping
 
 - ADOT Collector DaemonSet + gateway Deployment behind NLB on EKS
-- Kinesis Firehose → S3/OpenSearch; Security Lake for OCSF security data
+- Amazon Data Firehose → S3/OpenSearch; Security Lake for OCSF security data
 
 ## Practice question
 
@@ -67,10 +67,27 @@ Agent + gateway is the default production pattern. Multi-tier (local then region
 
 ## Exercise
 
-Run pocs/07_telemetry_pipeline; add a route that sends only ERROR logs to a 'pager' destination.
+Lab 6: stop ClickHouse for 30 seconds and read the Collector's retry logs. Then add a processor action that deletes `client.address`.
 
 ## Takeaways
 
 - Pipelines decouple producers from consumers
 - Redact once, centrally
 - Cut what nobody queries
+
+## Hands-on
+
+[Lab 6: The pipeline](https://github.com/phaniuk111/obserability-engineering/blob/main/lab/labs/06-pipeline.md)
+
+## Since the book (checked against documentation, 2026-11-27)
+
+- The Collector's `batch` processor is deprecated in favour of batching inside each exporter's `sending_queue`; the project's timeline has it warning from v0.171 (Feb 2027) and removed in v0.177 (May 2027).
+- The OTLP exporters are now called `otlp_grpc` and `otlp_http`; `otlp` and `otlphttp` remain as deprecated aliases.
+
+## Official documentation
+
+- [Collector resiliency](https://opentelemetry.io/docs/collector/resiliency/): Sending queue, retries, persistent storage
+- [Deprecating the Collector batch processor](https://opentelemetry.io/blog/2026/collector-batching-migration/): Exporter-level batching
+- [Span metrics connector](https://pkg.go.dev/github.com/open-telemetry/opentelemetry-collector-contrib/connector/spanmetricsconnector): RED metrics from spans
+- [OpAMP specification](https://opentelemetry.io/docs/specs/opamp): Remote management of agent fleets
+- [CloudWatch OTLP endpoints](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-OTLPEndpoint.html): Sending OTLP straight to AWS, SigV4-signed

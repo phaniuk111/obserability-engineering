@@ -51,7 +51,7 @@ Six practices form a flywheel. 0: rich data and precision tooling. 1: a dev-to-p
 | Blue-green / canary / rolling | Three progressive delivery variants | CodeDeploy deployment configs; ALB weighted target groups |
 | Strangler fig (Martin Fowler) | Incremental rewrite around legacy code | API Gateway/ALB routing per path |
 | DuckDB / Apache Iceberg | Columnar options for local trace analysis | Athena on Iceberg tables |
-| MCP (Model Context Protocol) | Lets agents query telemetry from IDE/chat | Bedrock agents + tool APIs |
+| MCP (Model Context Protocol) | Lets agents query telemetry from IDE/chat | Bedrock AgentCore + tool APIs |
 
 ## Interview line
 

@@ -86,3 +86,13 @@ Write the CREATE TABLE for your spans with a primary key matched to your top thr
 - Sort by how you query
 - Lazy materialisation for wide events
 - Evolve schema with data, not guesses
+
+## Hands-on
+
+[Lab 7: Storage](https://github.com/phaniuk111/obserability-engineering/blob/main/lab/labs/07-storage.md)
+
+## Official documentation
+
+- [ClickHouse MergeTree engine](https://clickhouse.com/docs/engines/table-engines/mergetree-family/mergetree): Parts, granules, sparse primary index
+- [MergeTree settings: max_bytes_*](https://clickhouse.com/docs/reference/settings/merge-tree-settings/max-bytes): Where the 150 GB merged-part default comes from
+- [Collector ClickHouse exporter](https://pkg.go.dev/github.com/open-telemetry/opentelemetry-collector-contrib/exporter/clickhouseexporter): The otel_traces schema used in the lab

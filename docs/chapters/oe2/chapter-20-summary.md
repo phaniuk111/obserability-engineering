@@ -79,7 +79,7 @@ Cost: choose compute models (capex, reserved, VMs, spot, Fargate/Cloud Run, Lamb
 
 ## Exercise
 
-Run pocs/09_cost_and_ci bin-packing; compute your own cluster's stranded cores.
+For one cluster, compare requested and used CPU per node and estimate the waste. Then name one telemetry stream you could sample or route to cheaper storage.
 
 ## Takeaways
 

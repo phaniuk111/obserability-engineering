@@ -22,6 +22,7 @@ PARTS = {1: "Introduction to observability", 2: "Instrumentation fundamentals", 
 BOOK = "Observability Engineering, 2nd Edition (Majors, Fong-Jones, Miranda, with Parker; O'Reilly 2026)"
 
 import gapfill  # noqa: E402
+import extras  # noqa: E402
 
 lessons = p1.LESSONS + p2.LESSONS + p3.LESSONS + p4.LESSONS + p5.LESSONS + p6.LESSONS
 _by = {l["id"]: l for l in lessons}
@@ -30,6 +31,22 @@ for src, key in ((gapfill.DEEPER, "deeper"), (gapfill.NAMES, "names"), (gapfill.
     for cid, items in src.items():
         _by[cid][key] = _by[cid][key] + items
 unread = p6.UNREAD
+for l in lessons:
+    cid = l["id"]
+    if cid in extras.EXERCISES:
+        l["exercise"] = extras.EXERCISES[cid]
+    assert "pocs/" not in l["exercise"], cid
+    n = extras.LABS.get(cid)
+    l["lab"] = {"n": n, "title": extras.LAB_TITLES[n][0], "url": extras.REPO + extras.LAB_TITLES[n][1]} if n else None
+    l["docs"] = [{"title": t, "url": u, "why": w} for t, u, w in extras.DOCS.get(cid, [])]
+    l["fresh"] = extras.FRESH.get(cid, [])
+
+
+def lab_label(poc):
+    n = extras.POC_TO_LAB.get((poc or "")[:2])
+    return f"Lab {n}" if n else ""
+
+
 ids = [l["id"] for l in lessons]
 assert len(ids) == len(set(ids)), "duplicate lesson ids"
 
@@ -57,9 +74,9 @@ data = {
     "parts": PARTS,
     "lessons": lessons,
     "unread": unread,
-    "map": [{"theme": t, "concepts": [{"name": n, "def": d, "chapters": c, "poc": p} for n, d, c, p in cs]}
+    "map": [{"theme": t, "concepts": [{"name": n, "def": d, "chapters": c, "poc": lab_label(p)} for n, d, c, p in cs]}
             for t, cs in KNOWLEDGE_MAP],
-    "requirements": [{"id": i, "text": t, "source": s, "poc": p} for i, t, s, p in REQUIREMENTS],
+    "requirements": [{"id": i, "text": t, "source": s, "poc": lab_label(p)} for i, t, s, p in REQUIREMENTS],
     "drills": [{"q": q, "a": a, "source": s} for q, a, s in DRILLS],
 }
 site = os.path.join(ROOT, "site")
@@ -92,6 +109,12 @@ for l in lessons:
             "## Interview line", "", f"> {l['interview']}", "", "## AWS mapping", "", *[f"- {a}" for a in l["aws"]], "",
             "## Practice question", "", f"**Q.** {l['practice']['q']}", "", f"**Model answer.** {l['practice']['a']}", "",
             "## Exercise", "", l["exercise"], "", "## Takeaways", "", *[f"- {t}" for t in l["takeaways"]], ""]
+    if l["lab"]:
+        body += ["## Hands-on", "", f"[Lab {l['lab']['n']}: {l['lab']['title']}]({l['lab']['url']})", ""]
+    if l["fresh"]:
+        body += ["## Since the book (checked against documentation, 2026-11-27)", "", *[f"- {x}" for x in l["fresh"]], ""]
+    if l["docs"]:
+        body += ["## Official documentation", "", *[f"- [{d['title']}]({d['url']}): {d['why']}" for d in l["docs"]], ""]
     with open(os.path.join(chdir, f"chapter-{n}-summary.md"), "w") as f:
         f.write("\n".join(body))
 for u in unread:
@@ -104,11 +127,11 @@ with open(os.path.join(docs, "knowledge-map.md"), "w") as f:
     for t in data["map"]:
         f.write(f"## {t['theme']}\n\n")
         f.write(md_table([[c["name"], c["def"], ", ".join(c["chapters"]), c["poc"] or "—"] for c in t["concepts"]],
-                         ["Concept", "Definition", "Chapters", "POC"]) + "\n\n")
+                         ["Concept", "Definition", "Chapters", "Lab"]) + "\n\n")
 
 with open(os.path.join(docs, "requirements.md"), "w") as f:
     f.write("# Requirements checklist\n\nWhat the book says a system or team should have in place. Use it as an assessment: tick what you can show evidence for.\n\n")
-    f.write(md_table([[r["id"], r["text"], r["source"], r["poc"]] for r in data["requirements"]], ["#", "Requirement", "Source", "POC"]) + "\n")
+    f.write(md_table([[r["id"], r["text"], r["source"], r["poc"]] for r in data["requirements"]], ["#", "Requirement", "Source", "Lab"]) + "\n")
 
 with open(os.path.join(docs, "claims.md"), "w") as f:
     f.write("# Numbers to know\n\nCheck the book before quoting any figure in writing. Figures are as reported by the book (often from contributors, Gartner, or the authors' own systems).\n\n")
@@ -151,12 +174,20 @@ The same idea repeats at every level. A precise, context-rich signal closes a fe
 
 Lead with an outcome, name the mechanism, give one number. Example: "Event-based SLIs: a minute where 6% of requests are slow burns 6% of budget, not 100%, which matters at four nines where the month's budget is about 4.4 minutes." The course page has an interview line per chapter and a drill bank.
 
-## Not covered
+## Coverage
 
-Chapters 30–32 (vendor partnerships, instrumentation for observability teams, where we go from here) were not read: the browser session disconnected. Some figures in Part IV/V were checked from captions only, without viewing the image (noted in docs/progress.md).
+All 32 chapters were read in full and paraphrased; chapters 30–32 were added in the second pass on 2026-11-27. Figures were viewed for Parts I–III and checked from captions for some of Parts IV–V. Numbers in the course were re-checked against the chapter text in that pass. Technical claims that depend on current tooling (Collector components, AWS services, semantic conventions) were checked against official documentation; see docs/sources.md.
 """
 with open(os.path.join(docs, "executive-summary.md"), "w") as f:
     f.write(EXEC)
+
+with open(os.path.join(docs, "sources.md"), "w") as f:
+    f.write("# Official documentation used in the review\n\nChecked on 2026-11-27. Per-chapter links also appear in each chapter summary and lesson.\n\n")
+    for l in lessons:
+        if l["docs"]:
+            f.write(f"## {l['id']} {l['title']}\n\n" + "\n".join(f"- [{d['title']}]({d['url']}): {d['why']}" for d in l["docs"]) + "\n\n")
+    f.write("## Also consulted\n\n" + "\n".join(f"- [{t}]({u})" for t, u in extras.MORE_SOURCES) + "\n\n")
+    f.write("## What changed since the book\n\n" + "\n".join(f"- **{l['id']}**: {x}" for l in lessons for x in l["fresh"]) + "\n")
 
 print(f"lessons={len(lessons)} unread={len(unread)} diagrams={len(D)} drills={len(DRILLS)} reqs={len(REQUIREMENTS)}")
 print("course.json bytes:", os.path.getsize(os.path.join(site, "course.json")))

@@ -46,7 +46,7 @@ Boris Tane's framing: the old wide SDLC collapses into intent → build → obse
 |---|---|---|
 | Sociotechnical debt (Tamburri & Di Nitto 2015) | Misalignment of social and technical structures | n/a |
 | DORA 2025 | AI amplifies existing practices | n/a |
-| Platform engineering | Product thinking for internal developer tools | AWS Proton / Backstage on AWS |
+| Platform engineering | Product thinking for internal developer tools | Backstage on AWS (Harmonix); AWS Proton support ended Oct 2026 |
 
 ## Interview line
 
@@ -71,3 +71,7 @@ Answer the three diagnostic questions for your org with evidence.
 - Learning speed is the constraint
 - Debts get called in at AI speed
 - Measure deploy → understanding
+
+## Since the book (checked against documentation, 2026-11-27)
+
+- AWS Proton support ended on 7 October 2026; AWS's migration guide points to Backstage-based options such as Harmonix.

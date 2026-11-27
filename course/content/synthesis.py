@@ -48,6 +48,15 @@ KNOWLEDGE_MAP = [
   ("Change management", "Five tests, coalition, mandate, one deep domain", ["ch28"], None),
   ("Build vs buy vs OSS", "2×2; price the puppy; buy platform, build glue", ["ch16", "ch29"], "09_cost_and_ci"),
  ]),
+ ("Buying, standards and what comes next", [
+  ("Vendor engineering", "Running a tool purchase and migration as engineering work across company lines", ["ch30", "ch29"], None),
+  ("POC as a load test", "Evaluate vendors on your hardest real problems with production data", ["ch30"], None),
+  ("Dual write", "Send the same telemetry to old and new backends during evaluation and migration", ["ch30", "ch31", "ch16"], "07"),
+  ("Telemetry schema", "Versioned, checkable contract for what a service emits", ["ch31", "ch07", "ch04"], None),
+  ("Paved path", "Make the correct way to instrument also the quickest", ["ch31", "ch23", "ch26"], None),
+  ("Compliance-friendly telemetry", "Hash or tokenise identifiers so correlation survives without exposure", ["ch31", "ch16"], "07"),
+  ("Code as cache", "Commitments live in specs, evals and telemetry so code can be regenerated", ["ch32", "ch02", "ch21"], None),
+ ]),
 ]
 
 # Numbered requirements = an assessment checklist (source chapter, POC)
@@ -74,6 +83,11 @@ REQUIREMENTS = [
  ("R20", "60–80% of engineers can investigate production independently; no 'two or three people' dependency", "ch01, ch28", "—"),
  ("R21", "Observability for product code reports to engineering and is run as a platform product", "ch23, ch26, ch28", "—"),
  ("R22", "Observability backend is operationally independent from production dependencies", "ch13, ch29", "—"),
+ ("R23", "Tool evaluations start from written success criteria and run as a POC on real production load, with dual-written data", "ch30", "—"),
+ ("R24", "Migrations have OKR milestones and a published date for decommissioning the old tool", "ch30", "—"),
+ ("R25", "Shared business identifiers have one name in a company namespace; a schema check runs in CI", "ch31, ch07", "—"),
+ ("R26", "Identifiers that raise compliance scope are consistently hashed or tokenised before storage", "ch31, ch16", "07"),
+ ("R27", "User-facing commitments exist outside the code as contracts, evals or SLOs that a rewrite can be checked against", "ch32", "04"),
 ]
 
 # Interview drill bank: (question, crisp answer outline, chapters)
@@ -96,4 +110,9 @@ DRILLS = [
  ("How would you convince leadership to change observability approach?", "Run the five tests and collect evidence, frame it as risk, capability and burden (not cost or consolidation), find the executive who owns the pain, start with one deep domain, then rerun the tests.", "ch28, ch26"),
  ("What is sociotechnical debt?", "Accumulated misalignment between how people and process work and the technical system, e.g. developers never seeing production. AI amplifies it.", "ch23, ch24"),
  ("Why are event-based SLIs better than time-sliced?", "Each request counts proportionally. A minute with 6% slow requests burns 6%, not 100%. That gives more reaction time, better accuracy for brownouts, and you can backfill SLI changes.", "ch12"),
+ ("How would you run an observability vendor evaluation?", "Agree sponsor, scope and measurable success criteria first. Move to OpenTelemetry and dual-write. Write the POC around your hardest incidents and unanswered questions, run it on production load for a fixed time, score with a rubric, validate price on a representative slice, and line up champions. Plan the migration to end with the old tool switched off.", "ch30"),
+ ("What should a central observability team own?", "The shared telemetry language: instrumentation libraries and defaults, pipeline configuration, alerting and SLO tooling, naming and schemas. They enable others rather than instrument everything themselves, and adoption is their measure.", "ch31"),
+ ("How do you handle PII in telemetry?", "Scrub centrally in the pipeline before storage. Hash or tokenise identifiers consistently so joins still work, drop what you don't need, check emitted telemetry against a schema in CI, and keep evidence for auditors. Verify it with a query for plaintext values.", "ch31, ch16"),
+ ("What does 'code is cache' mean for how we work?", "When generating code is cheap, validation is the bottleneck. Put commitments in specs, contract and behavioural tests, evals and SLOs; verify each deploy against production telemetry with fast rollback. Then an implementation can be replaced safely, whoever or whatever wrote it.", "ch32"),
+ ("Design a tail-sampling deployment for 200 services.", "Agents enrich and route by trace id to a sampling tier, because the decision needs the whole trace on one instance. Take RED metrics before sampling. Keep all errors and slow traces plus a baseline percentage, record or derive the weight, and archive everything unsampled to cheap storage. Size memory for decision wait times traces per second.", "ch15, ch16"),
 ]

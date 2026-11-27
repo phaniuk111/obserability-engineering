@@ -48,8 +48,8 @@ Proven uses: the first 15 minutes of incident groundwork, explaining traces (tha
 
 ## AWS mapping
 
-- Bedrock agent + tools over CloudWatch/X-Ray APIs + a service catalog as context
-- Amazon Q Developer operational investigations
+- Bedrock AgentCore agent + tools over CloudWatch/X-Ray APIs + a service catalog as context
+- CloudWatch investigations (GA June 2025; previewed as Amazon Q Developer operational investigations)
 
 ## Practice question
 
@@ -66,3 +66,11 @@ Write a YAML 'context card' for one service: aliases, owner, dependencies, known
 - Context beats model
 - Augment humans in incidents
 - Explicit knowledge replaces vanishing tacit knowledge
+
+## Since the book (checked against documentation, 2026-11-27)
+
+- The AWS feature previewed as 'Amazon Q Developer operational investigations' became generally available in June 2025 under the name CloudWatch investigations.
+
+## Official documentation
+
+- [Amazon CloudWatch investigations (GA announcement)](https://aws.amazon.com/about-aws/whats-new/2025/06/ga-accelerate-troubleshooting-amazon-cloudwatch-investigations): AWS's AI-assisted investigation feature

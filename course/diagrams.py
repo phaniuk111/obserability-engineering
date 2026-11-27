@@ -136,3 +136,31 @@ D["build_buy"] = dict(caption="Build vs buy 2×2 (Rick Clark). Redrawn after Fig
     + box(90, 25, 295, 115, "Should not exist\n(low value, bespoke)", "d-pink") + box(395, 25, 300, 115, "Build\n(differentiator, bespoke)", "d-acc")
     + box(90, 150, 295, 115, "Buy\n(commodity, low value):\nobservability platforms", "d-box") + box(395, 150, 300, 115, "Decide\n(commodity, high value)", "d-box"),
     title="Build versus buy"))
+
+D["sampling_tiers"] = dict(caption="Tail sampling needs two Collector tiers: route by trace id, then decide. Metrics and the archive are taken before the sampler (lab/collector).", svg=svg(240,
+    box(10, 40, 100, 56, "Apps\n(OTel SDK)") + arrow(110, 68, 138, 68)
+    + box(140, 40, 150, 56, "Agent Collector\nenrich (k8s, cloud)") + arrow(290, 68, 380, 68, "by trace id", 335, 52)
+    + box(382, 20, 150, 96, "Gateway Collector\nscrub PII\ntail sample", "d-acc")
+    + arrow(532, 44, 570, 44) + box(572, 22, 140, 44, "Vendor\n(sampled traces)")
+    + arrow(532, 92, 570, 92) + box(572, 72, 140, 44, "Prometheus / AMP\n(100% of spans)")
+    + arrow(457, 116, 457, 158) + box(382, 160, 150, 48, "S3 archive\n(everything)", "d-pink")
+    + _txt(10, 172, "All spans of one trace must reach the same gateway replica.", "d-s", "start")
+    + _txt(10, 194, "A disk-backed queue on the vendor exporter survives restarts.", "d-s", "start"),
+    title="Two-tier Collector deployment for tail sampling"))
+
+D["vendor_path"] = dict(caption="Vendor engineering from first conversation to switching the old tool off (ch30).", svg=svg(240,
+    "".join(box(10 + i * 142, 30, 128, 60, t, "d-acc" if i in (1, 4) else "d-box") + (arrow(138 + i * 142, 60, 150 + i * 142, 60) if i < 4 else "")
+            for i, t in enumerate(["Scope, sponsor,\nsuccess criteria", "POC on real\nproduction load", "Champions +\nprocurement", "Migrate:\nde-risk, bulk, iterate", "Decommission\nthe old tool"]))
+    + box(10, 124, 696, 40, "Underneath it all: credibility (what you say proves true) and trust (you act in their interest)", "d-pink")
+    + box(10, 176, 696, 40, "Encode the relationship: SLAs with the vendor, OKRs for the migration, OTel so you can leave", "d-box"),
+    title="Vendor path"))
+
+D["code_cache"] = dict(caption="Unbundling: commitments move out of the code so the code can be regenerated (ch32).", svg=svg(250,
+    box(20, 30, 300, 180, "", "d-box") + _txt(170, 52, "Today: code is the only record", "d-h")
+    + box(40, 74, 260, 36, "Developer intent") + box(40, 116, 260, 36, "User expectations") + box(40, 158, 260, 36, "Old promises and edge cases")
+    + arrow(326, 120, 392, 120, "unbundle", 359, 104)
+    + box(400, 30, 300, 180, "", "d-box") + _txt(550, 52, "Target: code is a cache", "d-h")
+    + box(420, 74, 260, 36, "Specs and contracts", "d-acc") + box(420, 116, 260, 36, "Evals and behavioural tests", "d-acc")
+    + box(420, 158, 260, 36, "Production telemetry + rollback", "d-pink"),
+    title="Code as cache"))
+

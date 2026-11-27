@@ -1,0 +1,44 @@
+# OpenTelemetry Collector, AGENT tier: one per node (DaemonSet), next to the workloads.
+# Enrichment that must be close to the pod happens here; then spans are routed so that all
+# spans of one trace land on the same gateway replica (required for tail sampling).
+#
+# On older Collector / ADOT builds use `loadbalancing` for `load_balancing` and `otlp`
+# for `otlp_grpc`. Validate with:  otelcol-contrib validate --config=<file>
+receivers:
+  otlp:
+    protocols:
+      grpc: { endpoint: 0.0.0.0:4317 }
+      http: { endpoint: 0.0.0.0:4318 }
+
+processors:
+  memory_limiter: { check_interval: 1s, limit_percentage: 80, spike_limit_percentage: 20 }
+  # Must run before anything regroups spans (tail sampling does): it looks up the pod
+  # from the incoming connection.
+  k8sattributes: {}
+  resourcedetection: { detectors: [env, ec2, eks] }
+
+exporters:
+  load_balancing/gateway:
+    routing_key: traceID
+    protocol:
+      otlp: { tls: { insecure: true } }     # in-cluster; use mTLS in regulated environments (ch31)
+    resolver:
+      k8s: { service: otel-gateway-headless.observability }
+  otlp_grpc/gateway_logs:
+    endpoint: otel-gateway.observability:4317
+    tls: { insecure: true }
+
+extensions:
+  health_check: {}
+
+service:
+  extensions: [health_check]
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [memory_limiter, k8sattributes, resourcedetection]
+      exporters: [load_balancing/gateway]
+    logs:
+      receivers: [otlp]
+      processors: [memory_limiter, k8sattributes, resourcedetection]
+      exporters: [otlp_grpc/gateway_logs]

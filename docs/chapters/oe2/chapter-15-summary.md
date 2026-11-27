@@ -64,10 +64,24 @@ Trace decisions must be consistent. Derive the decision from the trace ID so eve
 
 ## Exercise
 
-Run pocs/05_sampling; add a key that never samples /healthz and verify the weighted counts.
+Lab 5: run `make q F=05_sampling`. Change the baseline policy to 1% in the Collector and correct the weight in query 5b.
 
 ## Takeaways
 
 - Sample everything, record the rate
 - Consistency by trace ID
 - Rare and bad things get their own budget
+
+## Hands-on
+
+[Lab 5: Sampling](https://github.com/phaniuk111/obserability-engineering/blob/main/lab/labs/05-sampling.md)
+
+## Since the book (checked against documentation, 2026-11-27)
+
+- Tail sampling only works if every span of a trace reaches the same Collector instance; with more than one, put a load-balancing tier that routes by trace id in front.
+
+## Official documentation
+
+- [OpenTelemetry: Sampling](https://opentelemetry.io/docs/concepts/sampling/): Head vs tail, when to sample at all
+- [Tail sampling processor](https://pkg.go.dev/github.com/open-telemetry/opentelemetry-collector-contrib/processor/tailsamplingprocessor): Policies, decision_wait, scaling
+- [Load balancing exporter](https://pkg.go.dev/github.com/open-telemetry/opentelemetry-collector-contrib/exporter/loadbalancingexporter): Routing by trace id in front of tail sampling

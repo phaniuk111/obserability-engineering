@@ -65,7 +65,7 @@ Invariants (coverage, arithmetic, determinism) become runtime assertions, a sema
 
 ## Exercise
 
-Run pocs/08_ai_sandwich; add a 'max shift per hour' invariant and a test.
+Write three invariants for an AI-proposed change in a system you know (a hard limit, a rollback condition, a required approval) and say where each is enforced.
 
 ## Takeaways
 

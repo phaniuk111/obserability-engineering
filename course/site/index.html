@@ -114,10 +114,10 @@ function home(){
   const mins = C.lessons.reduce((s,l) => s + l.minutes, 0);
   return `<section class="band wrap hero">
     <div class="intro"><div><h1>Observability Engineering, interview-ready</h1>
-    <p>One lesson per chapter of the second edition, built for interviews: the idea in plain words, an answer you can say out loud, an AWS mapping, a practice question with a model answer, and checks. Ten runnable POCs back it up.</p></div>
+    <p>One lesson per chapter of the second edition, built for interviews: the idea in plain words, an answer you can say out loud, an AWS mapping, a practice question with a model answer, and checks. A lab with a real stack (OpenTelemetry, ClickHouse, Prometheus) backs it up.</p></div>
     <div class="stats"><div class="stat"><b>${C.lessons.length}/32</b>chapters as lessons</div><div class="stat"><b>${mins} min</b>total reading</div><div class="stat"><b>${C.drills.length + C.lessons.length}</b>interview questions</div><div class="stat"><b>${pct}%</b>marked done</div></div></div>
     <div class="box" aria-label="Course map">${parts}</div>
-    <p class="note">Dashed tiles (chapters 30–32) are not read yet: the browser session ended before them. Progress is kept in this browser only.</p>
+    <p class="note">All 32 chapters are covered. Progress is kept in this browser only.</p>
   </section>`;
 }
 
@@ -145,6 +145,9 @@ function lesson(l){
     <h2 style="margin-top:24px">Quick checks</h2><div class="grid2">${checks}</div>
     <div class="grid2" style="margin-top:18px"><div class="panel acc"><h3>Exercise</h3><p>${esc(l.exercise)}</p></div>
     <div class="panel"><h3>Takeaways</h3><ul class="clean">${l.takeaways.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div></div>
+    ${l.lab ? `<div class="panel pink" style="margin-top:18px"><h3>Hands-on</h3><p>Lab ${l.lab.n}: ${esc(l.lab.title)}. Real OpenTelemetry SDK, Collector, ClickHouse and Prometheus.</p><p><a href="${esc(l.lab.url)}" target="_blank" rel="noopener">Open the lab guide</a></p></div>` : ''}
+    ${l.fresh.length ? `<h2 style="margin-top:24px">Since the book</h2><p class="small mute">Checked against official documentation on 27 Nov 2026.</p><ul class="clean">${l.fresh.map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}
+    ${l.docs.length ? `<h2 style="margin-top:24px">Official documentation</h2><ul class="clean">${l.docs.map(d => `<li><a href="${esc(d.url)}" target="_blank" rel="noopener">${esc(d.title)}</a>: ${esc(d.why)}</li>`).join('')}</ul>` : ''}
     ${l.related.length ? `<h2 style="margin-top:24px">Connects to</h2><ul class="clean">${l.related.map(r => `<li>${esc(r.concept)}: ${r.chapters.map(chLink).join(', ')}</li>`).join('')}</ul>` : ''}
     <p class="note">${esc(l.coverage)}</p>
     <div class="row" style="margin-top:14px"><button class="primary" data-done="${esc(l.id)}">${d.has(l.id) ? 'Marked done ✓' : 'Mark as done'}</button></div>
@@ -201,16 +204,16 @@ function flashcards(){
 }
 
 function mapView(){
-  return `<section class="band wrap"><h1>Knowledge map</h1><p>Themes, then concepts, a one-line definition, the chapters that cover each, and the POC that implements it.</p>
-    ${C.map.map(t => `<h2 style="margin-top:22px">${esc(t.theme)}</h2><table class="stack"><thead><tr><th>Concept</th><th>Definition</th><th>Chapters</th><th>POC</th></tr></thead><tbody>${
-      t.concepts.map(c => `<tr><td><b>${esc(c.name)}</b></td><td>${esc(c.def)}</td><td>${c.chapters.map(chLink).join(', ')}</td><td>${c.poc ? `<code>pocs/${esc(c.poc)}</code>` : '—'}</td></tr>`).join('')}</tbody></table>`).join('')}</section>`;
+  return `<section class="band wrap"><h1>Knowledge map</h1><p>Themes, then concepts, a one-line definition, the chapters that cover each, and the lab where you can try it.</p>
+    ${C.map.map(t => `<h2 style="margin-top:22px">${esc(t.theme)}</h2><table class="stack"><thead><tr><th>Concept</th><th>Definition</th><th>Chapters</th><th>Lab</th></tr></thead><tbody>${
+      t.concepts.map(c => `<tr><td><b>${esc(c.name)}</b></td><td>${esc(c.def)}</td><td>${c.chapters.map(chLink).join(', ')}</td><td>${c.poc ? esc(c.poc) : '—'}</td></tr>`).join('')}</tbody></table>`).join('')}</section>`;
 }
 
 function checklist(){
   const t = store.get('req', {}); const n = C.requirements.filter(r => t[r.id]).length;
   return `<section class="band wrap"><h1>Assessment checklist</h1><p>What the book says a team should have in place. Tick only what you can show evidence for. Ticks are kept in this browser.</p>
     <div class="stats"><div class="stat"><b>${n}/${C.requirements.length}</b>in place</div></div>
-    <div style="margin-top:12px">${C.requirements.map(r => `<label class="check"><input type="checkbox" data-req="${esc(r.id)}"${t[r.id] ? ' checked' : ''}><span><b>${esc(r.id)}</b> ${esc(r.text)}<br><span class="small mute">Source: ${esc(r.source)} · POC ${esc(r.poc)}</span></span></label>`).join('')}</div></section>`;
+    <div style="margin-top:12px">${C.requirements.map(r => `<label class="check"><input type="checkbox" data-req="${esc(r.id)}"${t[r.id] ? ' checked' : ''}><span><b>${esc(r.id)}</b> ${esc(r.text)}<br><span class="small mute">Source: ${esc(r.source)} ${r.poc ? ' · ' + esc(r.poc) : ''}</span></span></label>`).join('')}</div></section>`;
 }
 
 function numbers(){

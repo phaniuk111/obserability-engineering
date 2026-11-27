@@ -28,7 +28,8 @@ const assert = (c, m) => { if (!c) { console.error('FAIL', m); process.exitCode 
 (async () => {
   await tick(); await tick();
   assert(d.querySelectorAll('.tile').length === 32, 'home shows 32 chapter tiles');
-  assert(d.querySelectorAll('.tile.unread').length === 3, '3 unread tiles');
+  assert(d.querySelectorAll('.tile.unread').length === 0, 'no unread tiles');
+  assert(d.querySelectorAll('.tile').length === 32, '32 chapter tiles');
   for (const l of data.lessons) {
     await go('#' + l.id);
     const h1 = d.querySelector('h1');
@@ -40,7 +41,13 @@ const assert = (c, m) => { if (!c) { console.error('FAIL', m); process.exitCode 
   assert(d.querySelector('[data-q="0"] .right'), 'quick check marks right answer');
   d.querySelector('[data-done]').click();
   assert(d.querySelector('[data-done]').textContent.includes('✓'), 'mark done toggles');
-  await go('#ch30'); assert(d.body.textContent.includes("isn't read yet"), 'unread chapter view');
+  await go('#ch30'); assert(d.querySelector('h1').textContent.includes('Vendor engineering'), 'ch30 is a full lesson');
+  assert(d.body.textContent.includes('Open the lab guide'), 'ch30 links to a lab');
+  await go('#ch16'); assert(d.body.textContent.includes('Since the book') && d.body.textContent.includes('batch'), 'ch16 shows post-book changes');
+  assert([...d.querySelectorAll('a[href^="https://opentelemetry.io"]')].length >= 2, 'ch16 links to official docs');
+  assert(![...d.querySelectorAll('a[target="_blank"]')].some(a => a.rel !== 'noopener'), 'external links use rel=noopener');
+  await go('#ch32'); assert(d.querySelector('figure svg'), 'ch32 has its diagram');
+  await go('#map'); assert(d.querySelector('#app').textContent.includes('Lab 3'), 'map points to labs'); assert(!d.querySelector('#app').textContent.includes('pocs/'), 'no old POC paths on the map');
   await go('#quiz'); d.querySelector('[data-qo="0"]').click();
   assert(!d.querySelector('[data-quiz=next]').disabled, 'quiz answer enables next');
   d.querySelector('[data-quiz=next]').click(); await tick();

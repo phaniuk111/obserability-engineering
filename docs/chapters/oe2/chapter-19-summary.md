@@ -56,8 +56,8 @@ Matt Klein's approach: log everything to an on-device ring buffer that doesn't l
 
 ## AWS mapping
 
-- CloudWatch RUM + Evidently/AppConfig for rule push
-- Pinpoint/Amplify analytics joined with RUM by session ID
+- CloudWatch RUM + AppConfig feature flags for rule push (CloudWatch Evidently was discontinued in Oct 2025)
+- Product analytics events joined with RUM by session ID (Amazon Pinpoint support ended Oct 2026)
 
 ## Practice question
 
@@ -67,10 +67,14 @@ Matt Klein's approach: log everything to an on-device ring buffer that doesn't l
 
 ## Exercise
 
-Run pocs/10_mobile_ring_buffer; add a rule targeting device_model and a test.
+List three user intentions in your mobile app (for example, start checkout) and the outcome event that completes each. Each pair is an SLI.
 
 ## Takeaways
 
 - Detect user impact first
 - Local buffer + control plane = fidelity dial
 - Segment, because P50 lies on devices
+
+## Since the book (checked against documentation, 2026-11-27)
+
+- CloudWatch Evidently was discontinued in October 2025 (AWS points to AppConfig feature flags) and Amazon Pinpoint support ended on 30 October 2026.

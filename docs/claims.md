@@ -282,3 +282,31 @@ Check the book before quoting any figure in writing. Figures are as reported by 
 | 98–99.5% | Availability where self-hosted OSS may be fine |
 | 18 months / $20M | In-house build promotion trap |
 
+### ch30 Vendor engineering: running the evaluation and the migration
+
+| Figure | Context |
+|---|---|
+| up to 90% | Disk reduction from MongoRocks in the origin story |
+| 3 steps | De-risk, bulk migrate, iterate |
+| last 10% | The hardest part of a migration |
+| $40M/yr, 17 years | Fictional 'Fort Pillars' incumbent vendor |
+| 14 h across 5 tools | Fictional 'Tool Sprawl' P0 incident |
+| 40–50% in 90 days | Cost cut expected in the consolidation scenario |
+
+### ch31 Instrumentation for observability teams
+
+| Figure | Context |
+|---|---|
+| 2x then 3x | Dapper usage after adding one link |
+| 12 months | Typical path to production in regulated industries |
+| 2 heuristics | Namespaces go general → specific; actors are client/server or producer/consumer |
+
+### ch32 Where next: code as cache, developers in production
+
+| Figure | Context |
+|---|---|
+| 1 prediction | The dev/ops line must be destroyed |
+| Every Tuesday | Honeycomb kills its oldest Kafka node |
+| ~18x | Harder to sustain Moore's-law growth now than in 1971 (Becker) |
+| 5 unknowns | What the deletion test exposes |
+

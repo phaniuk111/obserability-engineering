@@ -74,10 +74,18 @@ Predictive alerts project a baseline window forward. The rule of thumb: extrapol
 
 ## Exercise
 
-Run pocs/04_slo_burn; change the bad day's failures until the 4-day alert flips.
+Lab 4: with the fault on, watch the burn alert go from pending to firing in Prometheus. Change the target to 99.9% in query 4a and explain the new burn rate.
 
 ## Takeaways
 
 - Forecast, don't wait for zero
 - Baseline ≈ lookahead / 4
 - Count events, not good minutes
+
+## Hands-on
+
+[Lab 4: SLOs and burn alerts](https://github.com/phaniuk111/obserability-engineering/blob/main/lab/labs/04-slo.md)
+
+## Official documentation
+
+- [Google SRE Workbook: Alerting on SLOs](https://sre.google/workbook/alerting-on-slos/): Multi-window, multi-burn-rate alerts

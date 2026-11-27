@@ -68,10 +68,14 @@ Two telemetry models collide. The three pillars store metrics, logs and traces i
 
 ## Exercise
 
-Run pocs/01_wide_events: overall P99 looks fine, but the build × flag × region slice exposes a 6x slower cohort. Then compute 2^n − 1 for n = 4, 8, 30.
+Lab 2: run `make q F=02_wide_events`. Pick one result from 2b or 2c that your current metrics could not produce, and say why.
 
 ## Takeaways
 
 - Observability is a property you build in, not a product you buy
 - High cardinality is the point, not a problem
 - Three pillars for infra; unified wide events for your own code
+
+## Hands-on
+
+[Lab 2: Wide events and high cardinality](https://github.com/phaniuk111/obserability-engineering/blob/main/lab/labs/02-wide-events.md)

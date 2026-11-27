@@ -46,7 +46,7 @@ Layer signals rather than duplicating them. Traces for causality, metrics for ch
 | Name | What it is | Nearest AWS |
 |---|---|---|
 | W3C TraceContext / baggage | Standard propagation header + key-values | ADOT propagators (xray + tracecontext) |
-| Span links | Relate spans across traces (async) | X-Ray links via OTel |
+| Span links | Relate spans across traces (async) | OTel span links sent over OTLP (X-Ray SDKs are in maintenance; AWS points to OTel) |
 | Exemplars | Metric point → trace/span pointer | CloudWatch/AMP exemplars |
 | OBI (OTel eBPF Instrumentation) | Kernel-level zero-code tracing | EKS add-on style deployment |
 | OTel Weaver | Schema-driven telemetry validation/codegen | n/a |
@@ -70,10 +70,27 @@ Layer signals rather than duplicating them. Traces for causality, metrics for ch
 
 ## Exercise
 
-Use pocs/02_mini_tracer: add a producer/consumer pair with links and a correlation ID; verify with the test.
+Lab 1: read `lab/app/shop.py`, add one attribute and one custom span of your own, rebuild, and find them in ClickHouse. Explain why `send_receipt` uses a link, not a parent.
 
 ## Takeaways
 
 - Context is the product
 - Interesting + aggregable → span
 - Layer, don't duplicate; schemas keep humans and AI aligned
+
+## Hands-on
+
+[Lab 1: Follow one request](https://github.com/phaniuk111/obserability-engineering/blob/main/lab/labs/01-traces.md)
+
+## Since the book (checked against documentation, 2026-11-27)
+
+- AWS put the X-Ray SDKs and daemon into maintenance on 25 Feb 2026, with end of support on 25 Feb 2027, and recommends OpenTelemetry instrumentation instead.
+- The GenAI (`gen_ai.*`) conventions moved to their own repository in 2026 and are still marked as in development, so expect renames.
+
+## Official documentation
+
+- [OpenTelemetry semantic conventions: HTTP spans](https://opentelemetry.io/docs/specs/semconv/http/http-spans): Stable attribute names such as http.request.method
+- [HTTP conventions migration guide](https://opentelemetry.io/docs/specs/semconv/http/migration-guide/): Old name → new name table
+- [OpenTelemetry eBPF Instrumentation (OBI)](https://opentelemetry.io/docs/zero-code/obi/): Zero-code instrumentation from the kernel
+- [Weaver](https://github.com/open-telemetry/weaver): Define, lint and live-check telemetry schemas
+- [AWS: migrating from X-Ray SDKs to OpenTelemetry](https://docs.aws.amazon.com/xray/latest/devguide/xray-sdk-migration.html): Concept mapping and timeline

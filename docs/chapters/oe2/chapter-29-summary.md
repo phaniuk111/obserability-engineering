@@ -75,10 +75,18 @@ Default for most: buy the platform, build the integration layer. Observability i
 
 ## Exercise
 
-Place five components of your stack on the 2×2; run pocs/09 fully_loaded_build_cost for your numbers.
+Place five components of your stack on the 2×2. Price one 'free' open-source option in full: hardware, three engineers, on-call, upgrades.
 
 ## Takeaways
 
 - Buy the platform, build the glue
 - Price the whole puppy
 - Pricing must not punish curiosity
+
+## Hands-on
+
+[Lab 8: From lab to production](https://github.com/phaniuk111/obserability-engineering/blob/main/lab/labs/08-production.md)
+
+## Official documentation
+
+- [AWS services in maintenance](https://docs.aws.amazon.com/general/latest/gr/maintenance_services.html): Check before you depend on a managed service
